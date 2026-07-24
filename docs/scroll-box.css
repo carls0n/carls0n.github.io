@@ -1,18 +1,23 @@
 .cmdbox {
     border: 1px solid #000000;
     padding: 10px;
-    overflow: auto;
     background: #ffffff;
     color: #000000;
     
-    /* 1. Fixes mobile touch freezing */
+    /* 1. Force internal scrolling instead of shrinking or expanding */
+    overflow-y: scroll; 
     -webkit-overflow-scrolling: touch; 
     
-    /* 2. Forces a height constraint so it actually needs to scroll */
+    /* 2. YOU MUST SET A MAXIMUM HEIGHT (Change 200px to whatever you prefer) */
     max-height: 200px; 
+    
+    /* 3. Prevents text wrapping from stretching the container on mobile */
+    box-sizing: border-box; 
 }
 
+/* Keeps scrollbar hidden while allowing the swipe gesture */
 .cmdbox::-webkit-scrollbar {
     width: 0;
+    height: 0;
     background: transparent;
 }
