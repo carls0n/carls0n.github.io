@@ -77,7 +77,10 @@ Diamorphine LKM as we know is revealed in lsmod with<br><br>
 kill -63 0<br><br>
 Once revealed, you can remove it using<br><br>
 
-sudo rmmod diamorphine
-  </td></tr></table>
+sudo rmmod diamorphine<br><br>
+  You can disable kprobes to investigate what the lkm has been hiding<br><br>
+sudo sysctl -w debug.kprobes_optimization=0<br>
+
+</td></tr></table>
   </center>
 </html>
