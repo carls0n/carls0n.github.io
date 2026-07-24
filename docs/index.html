@@ -48,8 +48,9 @@ Now lets move on to dkms
 # sudo dkms status
 </pre>
 This will show you any modules that are being loaded by dkms during boot. If you find a suspicious module, you can remove it by using<br><br>
-
+<pre class="cmdbox">
 # sudo dkms remove deception/1.0
+</pre>
 Another place, that can start a module during boot is service files, which reside in /etc/systemd/system on systemd based linux distros. So take a look here and look through the service files. If you find a suspicious one, you can use the following
 
 <pre class="cmdbox">
