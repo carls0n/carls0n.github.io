@@ -1,7 +1,0 @@
-.scroll-box {
-  height: 150px;       /* Set the visible box height */
-  overflow-y: auto;    /* Enables vertical scrolling */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-  border: 1px solid #ccc;
-  padding: 10px;
-}
