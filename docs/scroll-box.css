@@ -1,26 +1,50 @@
+/* 1. DEFENSIVE BODY FIX: Prevents layout stretching */
+body {
+    color: #000000;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* 2. FORCED CONTAINER CONSTRAINTS */
 .cmdbox {
+    display: block;                  /* Enforces block formatting context */
+    box-sizing: border-box;          /* Forces padding to stay within height boundary */
     border: 1px solid #000000;
     padding: 10px;
     background: #ffffff;
     color: #000000;
-    box-sizing: border-box; 
     
-    /* 1. LOCKS SCROLL TO BOX ONLY (Stops page from taking over) */
-    overflow-y: auto; 
-    overscroll-behavior: contain; 
+    /* Strict Height Limiters */
+    height: 180px;                   /* FIXED height forces content to overflow */
+    max-height: 180px;
     
-    /* 2. Forces mobile browsers to process touch actions inside the box */
-    touch-action: pan-y; 
-    -webkit-overflow-scrolling: touch; 
-    
-    /* 3. Forces a height constraint (Adjust 200px to what you need) */
-    max-height: 200px; 
-    display: block; 
+    /* Mobile Touch Layer Controls */
+    overflow-y: scroll !important;   /* Guarantees internal vertical container scroll */
+    overflow-x: hidden;              /* Kills horizontal layout shaking */
+    overscroll-behavior: contain;    /* Cuts off mobile background scroll chaining */
+    touch-action: pan-y;             /* Locks touch mechanics strictly to Y axis */
+    -webkit-overflow-scrolling: touch; /* Forces native fluid scrolling layers */
 }
 
-/* Keeps scrollbar hidden while allowing the swipe gesture */
+/* Hidden Scrollbar Rules */
 .cmdbox::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    background: transparent;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* Formatting Classes */
+.indent {
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.bullet {
+    margin-left: 1%;
+}
+
+a {
+    color: #000000;
+    font-weight: bold;
 }
