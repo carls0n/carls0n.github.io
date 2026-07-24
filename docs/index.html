@@ -71,7 +71,7 @@ You can disable it like this
 Once you have identified the modules means of staying persistent and have followed these steps, simply reboot and your system should be free of the rootkit!
 
 <h3>What about LKM rootkits that don't use ftrace?</h3>
-In the case of diamorphine rootkit or other rootkits which use kprobes, you can identify the hidden module as well as a list of available kernel functions using<
+In the case of diamorphine rootkit or other rootkits which use kprobes, you can identify the hidden module as well as a list of available kernel functions using
 <pre class="cmdbox">
 # sudo cat /sys/kernel/tracing/available_filter_functions
 </pre>
