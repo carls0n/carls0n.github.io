@@ -56,7 +56,7 @@ Another place, that can start a module during boot is service files, which resid
 <pre class="cmdbox">
 # sudo systemctl stop deception
 </pre>
-and also,<br><br>
+and also
 <pre class="cmdbox">
 # sudo systemctl disable deception
 </pre>
@@ -65,14 +65,14 @@ This will prevent the module from loading during boot.<br><br>
 Finally, the last place we want to look is the /etc/modules-load.d/ directory. The exact directory can be slightly different depending on your distro. Here you might find a number of files named *.conf and will contain the line (for example)
 <br><br>
 deception<br><br>
-You can disable it like this<br><br>
+You can disable it like this
 <pre class="cmdbox">
 # sudo mv /etc/modules-load.d/filename.conf /etc/modules-load.d/filename.conf.disabled
 </pre>
 Once you have identified the modules means of staying persistent and have followed these steps, simply reboot and your system should be free of the rootkit!<br><br>
 
 <h3>What about LKM rootkits that don't use ftrace?</h3>
-In the case of diamorphine rootkit or other rootkits which use kprobes, you can identify the hidden module as well as a list of available kernel functions using<br><br>
+In the case of diamorphine rootkit or other rootkits which use kprobes, you can identify the hidden module as well as a list of available kernel functions using<
 <pre class="cmdbox">
 # sudo cat /sys/kernel/tracing/available_filter_functions
 </pre>
@@ -93,9 +93,10 @@ Diamorphine LKM as we know is revealed in lsmod with<br><br>
 <pre class="cmdbox">
 # kill -63 0
 </pre>
-Once revealed, you can remove it using<br><br>
-
-# sudo rmmod diamorphine<br><br>
+Once revealed, you can remove it using
+<pre class="cmdbox">
+# sudo rmmod diamorphine
+</pre>
   You can use unhide to view hidden processes
 <pre class="cmdbox">
   # sudo unhide proc
