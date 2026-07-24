@@ -3,16 +3,19 @@
     padding: 10px;
     background: #ffffff;
     color: #000000;
+    box-sizing: border-box; 
     
-    /* 1. Force internal scrolling instead of shrinking or expanding */
-    overflow-y: scroll; 
+    /* 1. LOCKS SCROLL TO BOX ONLY (Stops page from taking over) */
+    overflow-y: auto; 
+    overscroll-behavior: contain; 
+    
+    /* 2. Forces mobile browsers to process touch actions inside the box */
+    touch-action: pan-y; 
     -webkit-overflow-scrolling: touch; 
     
-    /* 2. YOU MUST SET A MAXIMUM HEIGHT (Change 200px to whatever you prefer) */
+    /* 3. Forces a height constraint (Adjust 200px to what you need) */
     max-height: 200px; 
-    
-    /* 3. Prevents text wrapping from stretching the container on mobile */
-    box-sizing: border-box; 
+    display: block; 
 }
 
 /* Keeps scrollbar hidden while allowing the swipe gesture */
