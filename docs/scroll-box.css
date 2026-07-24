@@ -1,1 +1,1 @@
-.scroll-box {border: 1px solid #AAAAAA;padding: 10px;overflow: auto;background: #ffffff;color: #34495E;}
+.cmdbox {border: 1px solid #AAAAAA;padding: 10px;overflow: auto;background: #ffffff;color: #34495E;  border-radius: 10px;}.cmdbox::-webkit-scrollbar {width: 0;background: transparent;}.indent {margin-left: 5%;margin-right: 5%;}.bullet {margin-left: 1%;}body {font-family: Helvetica, Arial, sans-serif;color: #34495E;}a {font-family: Helvetica, Arial, sans-serif;color: #34495E;font-weight: bold;}
