@@ -1,1 +1,18 @@
-.cmdbox {border: 1px solid #000000;padding: 10px;overflow: auto;background: #ffffff;color: #000000;}.cmdbox::-webkit-scrollbar {width: 0;background: transparent;}.indent {margin-left: 5%;margin-right: 5%;}.bullet {margin-left: 1%;}body {color: #000000;}a {color: #000000;font-weight: bold;}
+.cmdbox {
+    border: 1px solid #000000;
+    padding: 10px;
+    overflow: auto;
+    background: #ffffff;
+    color: #000000;
+    
+    /* 1. Fixes mobile touch freezing */
+    -webkit-overflow-scrolling: touch; 
+    
+    /* 2. Forces a height constraint so it actually needs to scroll */
+    max-height: 200px; 
+}
+
+.cmdbox::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}
