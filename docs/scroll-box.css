@@ -1,36 +1,56 @@
-body {
+/* 1. Reset base elements for reliable mobile rendering */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
     color: #000000;
 }
 
-/* Updated mobile-first container layout */
+/* 2. Fix the Table Layout on Mobile */
+table {
+    max-width: 90%;
+    width: 90%;
+    table-layout: fixed; /* Forces columns to stay inside screen bounds */
+    word-wrap: break-word;
+}
+
+/* 3. The Core Mobile Scroll Box Fix */
 .cmdbox {
+    display: block;                  /* Enforces structural container rules */
+    box-sizing: border-box;          /* Includes padding inside height math */
     border: 1px solid #000000;
     padding: 10px;
     background: #ffffff;
     color: #000000;
+    border-radius: 10px;
+    margin: 15px 0;
     
-    /* 1. MUST HAVE A MAX HEIGHT - Limits how tall the box can get */
-    max-height: 200px; 
+    /* Strict Height Limits */
+    max-height: 80px;                /* Keeps short commands small on mobile screens */
     
-    /* 2. FORCE INTERNAL SCROLLING - Forces text to scroll inside the limit */
-    overflow-y: scroll; 
+    /* Force Text Wrapping inside <pre> tags */
+    white-space: pre-wrap;           /* CSS3 - Forces long text to wrap onto next line */
+    white-space: -moz-pre-wrap;      /* Mozilla */
+    white-space: -pre-wrap;          /* Opera 4-6 */
+    white-space: -o-pre-wrap;        /* Opera 7 */
+    word-break: break-all;           /* Force break long linux paths if needed */
     
-    /* 3. MOBILE ISOLATION - Stops the touch gesture from moving the whole page */
-    overscroll-behavior: contain;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
-    
-    /* 4. DEFENSIVE BOX SIZING - Keeps padding inside the height calculation */
-    box-sizing: border-box;
+    /* Mobile Touch & Scroll Isolation */
+    overflow-y: auto;                /* Only scroll vertically if text overflows */
+    overflow-x: hidden;              /* Completely kills horizontal page shaking */
+    overscroll-behavior: contain;    /* Stops the background page from scrolling */
+    touch-action: pan-y;             /* Locks touch gestures strictly to up/down */
+    -webkit-overflow-scrolling: touch; /* Smooth iOS momentum swipe momentum */
 }
 
-/* Keeps scrollbars completely hidden on modern mobile engines */
+/* Hide Scrollbars smoothly */
 .cmdbox::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    background: transparent;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
 }
 
+/* Typography & Layout Formatting */
 .indent {
     margin-left: 5%;
     margin-right: 5%;
