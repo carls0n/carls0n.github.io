@@ -53,9 +53,9 @@ This will show you any modules that are being loaded by dkms during boot. If you
 # sudo dkms remove deception/1.0
 Another place, that can start a module during boot is service files, which reside in /etc/systemd/system on systemd based linux distros. So take a look here and look through the service files. If you find a suspicious one, you can use the following
 
-  <pre class="cmdbox">
+<pre class="cmdbox">
 # sudo systemctl stop deception
-  </pre>
+</pre>
 and also,<br><br>
 <pre class="cmdbox">
 # sudo systemctl disable deception
@@ -97,9 +97,9 @@ Once revealed, you can remove it using<br><br>
 
 # sudo rmmod diamorphine<br><br>
   You can use unhide to view hidden processes
-  <pre class="cmdbox">
+<pre class="cmdbox">
   # sudo unhide proc
-  </pre>
+</pre>
 
 </td></tr></table>
   </center>
