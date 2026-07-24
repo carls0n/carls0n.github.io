@@ -10,39 +10,34 @@ html, body {
 table {
     max-width: 90%;
     width: 90%;
-    table-layout: fixed; /* Forces columns to stay inside screen bounds */
-    word-wrap: break-word;
+    table-layout: fixed; /* Keeps the outer structure locked to the screen width */
 }
 
-/* 3. The Core Mobile Scroll Box Fix */
+/* 3. Horizontal Scroll Box Fix */
 .cmdbox {
     display: block;                  /* Enforces structural container rules */
-    box-sizing: border-box;          /* Includes padding inside height math */
+    box-sizing: border-box;          /* Includes padding inside math */
     border: 1px solid #000000;
-    padding: 10px;
+    padding: 15px 10px;              /* Extra top/bottom padding makes swiping easier */
     background: #ffffff;
     color: #000000;
     margin: 15px 0;
+    width: 100%;                     /* Forces box to fit inside the table cell */
     
-    /* Strict Height Limits */
-    max-height: 80px;                /* Keeps short commands small on mobile screens */
+    /* Keep text on one single line */
+    white-space: pre !important;     /* Forces text to never wrap */
     
-    /* Force Text Wrapping inside <pre> tags */
-    white-space: pre-wrap;           /* CSS3 - Forces long text to wrap onto next line */
-    white-space: -moz-pre-wrap;      /* Mozilla */
-    white-space: -pre-wrap;          /* Opera 4-6 */
-    white-space: -o-pre-wrap;        /* Opera 7 */
-    word-break: break-all;           /* Force break long linux paths if needed */
+    /* Horizontal (Left/Right) Scroll Mechanics */
+    overflow-x: auto !important;     /* Enables horizontal scrolling inside the box */
+    overflow-y: hidden;              /* Disables vertical scrolling since text is 1 line */
     
     /* Mobile Touch & Scroll Isolation */
-    overflow-y: auto;                /* Only scroll vertically if text overflows */
-    overflow-x: hidden;              /* Completely kills horizontal page shaking */
-    overscroll-behavior: contain;    /* Stops the background page from scrolling */
-    touch-action: pan-y;             /* Locks touch gestures strictly to up/down */
-    -webkit-overflow-scrolling: touch; /* Smooth iOS momentum swipe momentum */
+    overscroll-behavior-x: contain;  /* STOPS sideways swiping from moving the whole webpage */
+    touch-action: pan-x;             /* Tells mobile engine this box only handles left/right swipes */
+    -webkit-overflow-scrolling: touch; /* Smooth iOS momentum swipe */
 }
 
-/* Hide Scrollbars smoothly */
+/* Hide Scrollbars cleanly while keeping scroll active */
 .cmdbox::-webkit-scrollbar {
     width: 0 !important;
     height: 0 !important;
