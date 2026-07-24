@@ -5,7 +5,7 @@
 Defeating ftrace based rootkits IS possible. Here, I will show you a few things that might be of help to you in identifying and disabling ftrace based rootkits.. First, we are going to look at kernel tracing. Very simple to do, yet a very powerful tool!
 <br><br>
 
-sudo cat /sys/kernel/tracing/enabled_functions<br>
+sudo cat /sys/kernel/tracing/enabled_functions<br><br>
 Below we can see an example of what this can tell us.<br><br>
 
 __x64_sys_kill (1) R I     M 	tramp: 0xffffffffc05dc000 (fh_ftrace_thunk+0x0/0xa0 [deception]) ->ftrace_ops_assist_func+0x0/0x100<br>
