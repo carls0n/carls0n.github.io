@@ -104,3 +104,6 @@ Once revealed, you can remove it using
 You can use unhide to view hidden processes prior to removing the module.
 
 # sudo unhide proc
+
+If you suspect a kprobes based rootkit, you can disable kprobes using
+# echo 0 | sudo tee /sys/kernel/debug/kprobes/enabled
