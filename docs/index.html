@@ -3,32 +3,34 @@
 <head> 
     <title>Defeating ftrace based LKM rootkits for fun and profit</title> 
     <style>
+        /* Allow the main webpage window to scroll naturally */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100vh;
-            overflow: hidden; 
+            height: auto;
+            min-height: 100vh;
             display: flex;
             justify-content: center; 
-            align-items: center;     
-            background-color: #ffffff; 
+            background-color: #f4f4f4; 
         }
 
-      
+        /* Container scales to the exact size of the text file */
         .text-frame {
             width: 90%;
-            height: 95vh; 
+            height: 100%; /* Spans the full height of the text content */
+            min-height: 95vh;
             border: none;
-            background-color: #ffffff;
             
-           
+            /* Completely kills the inner scrollbar */
+            overflow: hidden; 
         }
     </style>
 </head> 
 <body>
 
-<iframe class="text-frame" src="./text.txt" scrolling="auto"></iframe>
+    <!-- Setting scrolling="no" strips the inner scrollbar entirely -->
+    <iframe class="text-frame" src="./text.txt" scrolling="no"></iframe>
 
 </body>
 </html>
