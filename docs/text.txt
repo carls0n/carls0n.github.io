@@ -1,5 +1,6 @@
 
 Defeating ftrace based LKM rootkits for fun and profit
+------------------------------------------------------
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your wifi first.
 Defeating ftrace based rootkits IS possible. Here, I will show you a few things that might be of help to you in identifying and disabling ftrace based rootkits.. First, we are going to look at kernel tracing. Very simple to do, yet a very powerful tool!
@@ -30,6 +31,7 @@ to unhide the module, followed by
 However, in the case of deception, the exact command is variable according to a user defined PID (or magic number). For example, the exact command to reveal the module might be kill -63 8000. So we don't know in this case what the exact command is. So now what? Let's assume the module has not been made persistent by the use of a cronjob, dkms or a service file. Also, /etc/modules-load.d/ (variable on different distros) can load modules while booting. A kernel module, once inserted, if not made persistent, can be cleared from the kernel simply by rebooting. If a reboot does not resolve the problem, it might be being made persistent by one of these methods.
 
 What if a reboot doesn't clear the kernel of suspected rootkit?
+---------------------------------------------------------------
 
 So... lets start with cronjobs. We can check our cronjobs like this
 
@@ -66,6 +68,7 @@ You can disable it like this
 Once you have identified the modules means of staying persistent and have followed these steps, simply reboot and your system should be free of the rootkit!
 
 What about LKM rootkits that don't use ftrace?
+----------------------------------------------
 
 In the case of diamorphine rootkit or other rootkits which use kprobes, you can identify the hidden module as well as a list of available kernel functions using
 
