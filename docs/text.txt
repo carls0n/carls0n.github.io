@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-
 
 Defeating ftrace based LKM rootkits
 
