@@ -3,7 +3,7 @@ Defeating ftrace based LKM rootkits for fun and profit
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your wifi first.
 
-Defeating ftrace based rootkits IS possible. Here, I will show you a few things that might be of help to you in identifying and disabling ftrace based rootkits.. First, we are going to look at kernel tracing. Very simple to do, yet a very powerful tool!
+Defeating ftrace based rootkits IS possible. Here, I will show you a few things that might be of help to you in identifying and disabling ftrace based rootkits.. First, we are going to look at kernel tracing. Very simple to do, yet a very powerful tool.
 
 # sudo cat /sys/kernel/tracing/enabled_functions
 
@@ -14,11 +14,11 @@ __x64_sys_getdents64 (1) R I     M 	tramp: 0xffffffffc05ce000 (fh_ftrace_thunk+0
 __x64_sys_recvmsg (1) R I     M 	tramp: 0xffffffffc05c9000 (fh_ftrace_thunk+0x0/0xa0 [deception]) ->ftrace_ops_assist_func+0x0/0x100
 tcp6_seq_show (1) R I     M 	tramp: 0xffffffffc05dd000 (fh_ftrace_thunk+0x0/0xa0 [deception]) ->ftrace_ops_assist_func+0x0/0x100
 
-We can see exactly what is being hooked as well as the name of the kernel module doing the hooking! This shows us the module [deception] is at work here, even though the module is hidden. This is extremely helpful. Here the module was inserted without its name being changed. So we now know that the rootkit deception is installed on our system. If you want to further inspect what the module is doing, you can temporarily disable ftrace in order to see what the module is doing. I.E, hiding ports or processes.
+We can see exactly what is being hooked as well as the name of the kernel module doing the hooking! This shows us the module [deception] is at work here, even though the module is hidden. This is extremely helpful. Here the module was installed without its name being changed. So we now know that the rootkit deception is installed on our system. If you want to further inspect what the module is doing, you can temporarily disable ftrace in order to see what the module is doing. I.E, hiding ports or processes.
 
 # sudo sysctl kernel.ftrace_enabled=0
 
-Once you run this command, you can use system tools like ss and netstat and ps to show you what the rootkit has been hiding from you and what it is currently doing.
+Once you run this command, you can use your system tools like ss, netstat and ps to show you what the rootkit has been hiding from you.
 
 Since we now know the name of the rootkit, we can look at options to completely disable and remove it. A lot of rootkits have simple kill commands to control the kernel module such as kill -63 0 to make module visible in lsmod or kill -64 0 to give root privileges. We can simply use
 
@@ -28,7 +28,7 @@ to unhide the module, followed by
 
 # sudo rmmod deception
 
-However, in the case of deception, the exact command is variable according to a user defined PID (or magic number). For example, the exact command to reveal the module might be kill -63 8000. So we don't know in this case what the exact command is. So now what? Let's assume the module has not been made persistent by the use of a cronjob, dkms or a service file. Also, /etc/modules-load.d/ (variable on different distros) can load modules while booting. A kernel module, once inserted, if not made persistent, can be cleared from the kernel simply by rebooting. If a reboot does not resolve the problem, it might be being made persistent by one of these methods.
+However, in the case of deception, the exact command is variable according to a user defined PID (or magic number). For example, the exact command to reveal the module might be kill -63 8000. So we don't know in this case what the exact command is. So now what? Let's assume the module has not been made persistent by the use of a cronjob, dkms or a service file. Also, /etc/modules-load.d/ (variable on different distros) can load modules while booting. A kernel module, once installed, if not made persistent, can be cleared from the kernel simply by rebooting. If a reboot does not resolve the problem, it might be being made persistent by one of these methods.
 
 What if a reboot doesn't clear the kernel of suspected rootkit?
 
@@ -42,7 +42,7 @@ Now lets move on to dkms
 
 # sudo dkms status
 
-This will show you any modules that are being loaded by dkms during boot. If you find a suspicious module, you can remove it by using
+This will show you any modules that are being installed by dkms during boot. If you find a suspicious module, you can remove it by using
 
 # sudo dkms remove deception/1.0
 
