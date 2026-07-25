@@ -75,7 +75,7 @@ means of staying persistent and have followed these steps, simply reboot and you
 * What about LKM rootkits that don't use ftrace? *
 **************************************************
 
-In the case of diamorphine rootkit (which doesn't use ftrace or kprobes) or rootkits that use kprobes (this works for ftrace also), you can identify the hidden module as well as a list of available kernel functions using
+In the case of diamorphine (which doesn't use ftrace or kprobes) or rootkits that use kprobes (this works for ftrace also), you can identify the hidden module as well as a list of available kernel functions using
 
 # sudo cat /sys/kernel/tracing/available_filter_functions
 
