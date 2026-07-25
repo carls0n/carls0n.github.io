@@ -35,7 +35,6 @@ What if a reboot doesn't clear the kernel of suspected rootkit?
 So... lets start with cronjobs. We can check our cronjobs like this
 
 # crontab -l
-
   
 Be sure to check roots crontab as well as your own user. If a suspicious entry is present, you can stop it from executing by placing a # at the beginning of the line.
 
@@ -48,7 +47,6 @@ This will show you any modules that are being loaded by dkms during boot. If you
 # sudo dkms remove deception/1.0
 
 Another place, that can start a module during boot is service files, which reside in /etc/systemd/system on systemd based linux distros. So take a look here and look through the service files. If you find a suspicious one, you can use the following
-
 
 # sudo systemctl stop deception
 
@@ -87,7 +85,8 @@ module_show [diamorphine]
 module_hide [diamorphine]
 hacked_kill [diamorphine]
 flipswitch_func [diamorphine]
-Diamorphine LKM as we know is revealed in lsmod with
+
+Diamorphine LKM, as we know, is revealed in lsmod with
 
 # kill -63 0
 
