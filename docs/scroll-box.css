@@ -19,7 +19,7 @@ table {
     box-sizing: border-box;          /* Includes padding inside math */
     border: 1px solid #000000;
     padding: 15px 10px;              /* Extra top/bottom padding makes swiping easier */
-    background: #ffffff;
+    background: #E1E1E!;
     color: #000000;
     margin: 15px 0;
     width: 100%;                     /* Forces box to fit inside the table cell */
