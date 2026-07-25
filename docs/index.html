@@ -3,28 +3,30 @@
 <head> 
     <title>Defeating ftrace based LKM rootkits for fun and profit</title> 
     <style>
+        /* Allow the outer window to scroll naturally */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-            background-color: #ffffff; 
-            display: flex;
-            justify-content: center; 
-            /* Let the page grow naturally */
             height: auto; 
+            background-color: #ffffff; 
+            display: grid;
+            justify-items: center; 
         }
 
+        /* The object tag will expand to the text length without clipping */
         .text-frame {
             width: 90%;
-            height: 100vh; 
-            border: none;
-            overflow: hidden; 
+            height: auto; 
+            min-height: 100vh; /* Ensures it takes up at least the whole screen */
+            display: block;
         }
     </style>
 </head> 
 <body>
 
-    <iframe class="text-frame" src="./text.txt" scrolling="no"></iframe>
+    <!-- Replacing iframe with object allows the page to grow naturally -->
+    <object class="text-frame" data="./text.txt" type="text/plain"></object>
 
 </body>
 </html>
