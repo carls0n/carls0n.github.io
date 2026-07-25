@@ -1,34 +1,34 @@
-<html>
-<head>
-<title>Defeating ftrace based LKM rootkits for fun and profit</title>
-   <style>
-        /* Remove default browser borders and margins */
+<!DOCTYPE html>
+<html> 
+<head> 
+    <title>Defeating ftrace based LKM rootkits for fun and profit</title> 
+    <style>
+        /* Reset browser defaults and lock screen scrolling */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100vh;
-            overflow: hidden; /* Lock the viewport */
+            overflow: hidden; 
             display: flex;
-            justify-center: center;
-            align-items: center;
-            background-color: #f0f0f0; /* Optional: background color */
+            justify-content: center; /* Centers the container horizontally */
+            align-items: center;     /* Centers the container vertically */
+            background-color: #ffffff; 
         }
 
-        /* Container that scales perfectly */
-        .text-container {
+        /* Container styling */
+        .iframe-container {
             width: 90%;
-            height: 95vh; /* Slightly less than full height to ensure it fits */
-            overflow: hidden; /* Hide internal scrollbars */
+            height: 95vh; 
             border: none;
+            overflow: hidden; 
         }
     </style>
-</head>
+</head> 
 <body>
-<center>
 
-<object class="text-container" type="text/plain" data="./text.txt"></object>
-</center>
+    <!-- Using an iframe instead of an object ensures correct text document rendering -->
+    <iframe class="iframe-container" src="./text.txt" scrolling="no"></iframe>
+
 </body>
 </html>
-
