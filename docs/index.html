@@ -3,7 +3,7 @@
 <head> 
     <title>Defeating ftrace based LKM rootkits for fun and profit</title> 
     <style>
-        
+        /* Lock the main browser window completely */
         html, body {
             margin: 0;
             padding: 0;
@@ -11,23 +11,28 @@
             height: 100vh;
             overflow: hidden; 
             display: flex;
-            justify-content: center;
-            align-items: center; 
-            background-color: #ffffff; 
+            justify-content: center; 
+            align-items: center;     
+            background-color: #f4f4f4; 
         }
 
-        /* Container styling */
-        .iframe-container {
+        /* Container that handles the text file */
+        .text-frame {
             width: 90%;
             height: 95vh; 
-            border: none;
-            overflow: hidden; 
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            
+            /* ALLOW SCROLLING INSIDE THE TEXT BOX ONLY */
+            overflow-y: auto; 
+            overflow-x: hidden;
         }
     </style>
 </head> 
 <body>
 
-    <iframe class="iframe-container" src="./text.txt" scrolling="no"></iframe>
+    <!-- Using an iframe with auto scrolling enabled lets you read to the end -->
+    <iframe class="text-frame" src="./text.txt" scrolling="auto"></iframe>
 
 </body>
 </html>
