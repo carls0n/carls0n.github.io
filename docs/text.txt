@@ -1,6 +1,6 @@
-**********************************************************
-* Defeating ftrace based LKM rootkits for fun and profit *
-**********************************************************
+************************************************************
+* Defeating LKM and LD_PRELOAD rootkits for fun and profit *
+************************************************************
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your wifi first.
 
