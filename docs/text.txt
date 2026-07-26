@@ -295,7 +295,7 @@ ssize_t read(int fd, void *buf, size_t count) {
     return result;
 }
 
-So...if we the call to read /etc/ld.so.preload can be intercepted and redirected and thw library can be hidden from virtual memory, how then can we identify and disable the shared library? And strace comes to the rescue. By tracing the call to read /etc/ld.so.preload, we can find out a couple importnat things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
+So...if the call to read /etc/ld.so.preload can be intercepted and redirected and thw library can be hidden from virtual memory, how then can we identify and disable the shared library? And strace comes to the rescue. By tracing the call to read /etc/ld.so.preload, we can find out a couple importnat things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
 
 # strace cat /etc/ld.so.preload
 
