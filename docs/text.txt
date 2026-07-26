@@ -216,7 +216,6 @@ We can see now that libhide.so.2 is a dependency. So we can tell from the result
 
 Which would return the following
 
-marc@archlinux:$ cat /proc/self/maps
 55ac55b8a000-55ac55b8c000 r--p 00000000 00:19 18090                      /usr/bin/cat
 55ac55b8c000-55ac55b92000 r-xp 00002000 00:19 18090                      /usr/bin/cat
 55ac55b92000-55ac55b95000 r--p 00008000 00:19 18090                      /usr/bin/cat
