@@ -127,7 +127,6 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 #include <string.h>
 #include <sys/types.h>
 
-// Fixed: Added correct const char* types and semicolons
 const char *PRELOAD_PATH = "/etc/ld.so.preload";
 const char *DUMMY_PRELOAD = "/etc/ld.so.preload.dummy";
 
