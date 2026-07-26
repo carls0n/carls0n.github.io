@@ -113,7 +113,7 @@ This will immediately disarm any kprobe running on your system. This will also a
 * What about LD_PRELOAD rootkits? Is it possible to detect and remove them? *
 *****************************************************************************
 
-The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Although the shared libraries could be loaded through .bashrc. In most cases though, you could identify the shared library by simply looking for the entry in /etc/ld.so.preload. The problem here is that the call to read /etc/ld.so.preload can be intercepted and redirected to say, a blank dummy file making it look as though there is nothing in /etc/ld.so.preload. The c code below will do just that. It intercepts a call to say /etc/ld.so.preload and redirects it to the dummy file. The dummy file must be created first. Once that is done,a command such as cat /etc/ld.so.preload will be intercepted and redirceted to the blank dummy file. In this way, it appears there is no shared libraries being loaded by the ld preloader.
+The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Although the shared libraries could be loaded through .bashrc. In most cases though, you could identify the shared library by simply looking for the entry in /etc/ld.so.preload. The problem here is that the call to read /etc/ld.so.preload can be intercepted and redirected to say, a blank dummy file making it look as though there is nothing in /etc/ld.so.preload. The c code below will do just that. It intercepts a call to say /etc/ld.so.preload and redirects it to the dummy file. The dummy file must be created first. Once that is done,a command such as cat /etc/ld.so.preload will be intercepted and redirected to the blank dummy file. In this way, it appears there is no shared libraries being loaded by the ld preloader.
 
 # sudo touch /etc/ld.so.preload.dummy
 
@@ -191,9 +191,7 @@ int openat(int dirfd, const char *pathname, int flags, ...) {
     return orig_openat(dirfd, pathname, flags, mode);
 }
 
-So then, how can we find and identify the preloaded shared library?
-
-Well, there are a couple places we could look. One being ldd and the other being a virtual memory map. If we call ldd using
+So then, how can we find and identify the preloaded shared library? Well, there are a couple places we could look. One being ldd and the other being a virtual memory map. If we call ldd using
 
 # ldd /usr/bin/lsof
 
@@ -251,7 +249,7 @@ marc@archlinux:$ cat /proc/self/maps
 7ffd8784a000-7ffd8786b000 rw-p 00000000 00:00 0                          [stack]
 ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
 
-It is clear from the results, that the shared library libhide.so.2 is being preloaded and resides in virtual memory.The problem here is, it is trivial to hide this information. If one were to compile the following into the libhide.so.2 code, neither ldd nor /proc/self/maps would show the shared library libhide.so.2
+It is clear from the results, that the shared library libhide.so.2 is being preloaded and resides in virtual memory. The problem here is, it is trivial to hide this information. If one were to compile the following into the libhide.so.2 code, neither ldd nor /proc/self/maps would show the shared library libhide.so.2
 
 /* memhide.c */
 #define _GNU_SOURCE
@@ -295,7 +293,7 @@ ssize_t read(int fd, void *buf, size_t count) {
     return result;
 }
 
-So...if the call to read /etc/ld.so.preload can be intercepted and redirected and the library can be hidden from virtual memory, how then can we identify and disable the shared library? Here, strace comes to the rescue. By tracing the call to read /etc/ld.so.preload, we can find out a couple important things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
+So...if the call to read /etc/ld.so.preload can be intercepted and redirected and the library can be hidden from virtual memory, how then can we identify and disable the shared library? Here, strace comes to the rescue. By tracing the call to read /etc/ld.so.preload, we can find out a couple of important things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
 
 # strace cat /etc/ld.so.preload
 
@@ -307,7 +305,7 @@ The second line which is noteworthy looks like this
 
 openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
 
-So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothing by the name of libhide.so.2 resides there. That is because of the following code which hides the shared library from tools like ls.
+So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as, second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothing by the name of libhide.so.2 resides there. That is because of the following code which hides the shared library from tools like ls.
 
 /* hidelib.c */
 #define _GNU_SOURCE
@@ -440,7 +438,7 @@ int openat(int dirfd, const char *pathname, int flags, ...) {
     return orig_openat(dirfd, pathname, flags, mode);
 }
 
-However, as shown earlier, using strace leaves nowhere to hide. Now that we know the name of the shared libarary that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
+However, as shown earlier, using strace leaves nowhere to hide. Now that we know the name of the shared library that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
 
 # sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled
 
