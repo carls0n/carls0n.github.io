@@ -119,7 +119,6 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 # sudo touch /etc/ld.so.preload.dummy
 
 /* redirect.c*/
-
 #define _GNU_SOURCE
 #include <fcntl.h>
 #include <stdarg.h>
