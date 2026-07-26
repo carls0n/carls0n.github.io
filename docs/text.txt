@@ -127,7 +127,7 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 #include <string.h>
 
 PRELOAD_PATH="/etc/ld.so.preload"
-DUMMY _PRELOAD="/etc/ld.so.preload/dummy"
+DUMMY _PRELOAD="/etc/ld.so.preload.dummy"
 
 extern __thread int inside_hook;
 
