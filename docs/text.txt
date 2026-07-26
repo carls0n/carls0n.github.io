@@ -199,7 +199,7 @@ Well, there are a couple places we could look. One being ldd and the other being
 
 we should see the following
 
-marc@archlinux:$ ldd /usr/bin/lsof
+# ldd /usr/bin/lsof
 	linux-vdso.so.1 (0x00007f59a0d6a000)
 	--> /usr/local/lib/libhide.so.2 (0x00007f59a0d2d000)
 	libtirpc.so.3 => /usr/lib/libtirpc.so.3 (0x00007f59a0cf7000)
