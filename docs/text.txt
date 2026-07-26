@@ -253,7 +253,7 @@ ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsysca
 
 It is clear from the results, that the shared library libhide.so.2 is being preloaded and resides in virtual memory.The problem here is, it is trivial to hide this information. If one were to compile the following into the libhide.so.2 code, neither ldd nor /proc/self/maps would show the shared library libhide.so.2
 
-/* libhide.c */
+/* memhide.c */
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <string.h>
