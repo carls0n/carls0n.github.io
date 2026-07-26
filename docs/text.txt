@@ -212,7 +212,7 @@ we would see the following
 	libkeyutils.so.1 => /usr/lib/libkeyutils.so.1 (0x00007f59a09a3000)
 	libresolv.so.2 => /usr/lib/libresolv.so.2 (0x00007f59a0991000)
 
-We can see now that libhide.so.2 is a dependency. So we can tell from the results that the shared library libhide.so.2 is being preloaded, despie the fact that /etc/ld.so.preload shows no entries and we've checked .bashrc. In addition, we can also check virtual memory using
+We can see now that libhide.so.2 is a dependency. So we can tell from the results that the shared library libhide.so.2 is being preloaded, despite the fact that /etc/ld.so.preload shows no entries and we've checked .bashrc. In addition, we can also check virtual memory using
 
 # cat /proc/self/maps
 
