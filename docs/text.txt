@@ -444,8 +444,7 @@ int openat(int dirfd, const char *pathname, int flags, ...) {
     return orig_openat(dirfd, pathname, flags, mode);
 }
 
-However, a shown earlier, using starce leaves nowhere to hide. Now that we know the name of the shared libarary, that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory,w e can simply rename
-the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
+However, as shown earlier, using strace leaves nowhere to hide. Now that we know the name of the shared libarary, that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
 
 # sudo mv /usr/local/lib/libhide/so.2 /usr/local/lib/libhide.so.2.disabled
 
