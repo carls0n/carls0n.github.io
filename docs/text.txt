@@ -106,4 +106,7 @@ You can use unhide to view hidden processes prior to removing the module.
 # sudo unhide proc
 
 If you suspect a kprobes based rootkit, you can disable kprobes using
+
 # echo 0 | sudo tee /sys/kernel/debug/kprobes/enabled
+
+This will immediately disarm any kprobe running on your system. This will also allow you to investigate further.
