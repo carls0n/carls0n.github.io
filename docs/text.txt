@@ -128,7 +128,6 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 const char *PRELOAD_PATH = "/etc/ld.so.preload";
 const char *DUMMY_PRELOAD = "/etc/ld.so.preload.dummy";
 
-// Fixed: Defined the thread-local variable so it allocates memory
 __thread int inside_hook = 0;
 
 int open(const char *pathname, int flags, ...) {
