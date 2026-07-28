@@ -306,7 +306,7 @@ openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
 So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as, second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothing by the name of libhide.so.2 resides there. That is because of the following code which hides the shared library from tools like ls.
 
 
-/* libhide.c */
+/* libhide.c - updated */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
