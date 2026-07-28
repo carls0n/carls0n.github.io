@@ -117,7 +117,7 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 
 # sudo touch /etc/ld.so.preload.dummy
 
-/* intercept.c - updated */
+/* intercept.c - updated 7/28/26 */
 #define _GNU_SOURCE
 #include <fcntl.h>
 #include <stdarg.h>
@@ -295,7 +295,7 @@ openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
 So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as, second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothing by the name of libhide.so.2 resides there. That is because of the following code which hides the shared library from tools like ls.
 
 
-/* libhide.c - updated */
+/* libhide.c - updated 7/28/26 */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
@@ -351,7 +351,7 @@ struct dirent *readdir(DIR *dirp) {
 
 So far we have looked at intercepting/redirecting for stealth. Hiding the module itself as well as hiding the entry in virtual memory. What's the point? Well let's say the rootkits primary payload is a rootshell. which could be done with the following code.
 
-/*rootshell.c*/
+/* rootshell.c */
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
