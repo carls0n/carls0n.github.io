@@ -370,7 +370,7 @@ In this way, the attacker could type
 
 # rootshell=1 su
 
-and would get a rootshell. While the other code snippets on this page can be tested with LD_PRELOAD after compiling, i.e, LD_PRELOAD=./libhide.so ls -l, the rootshell code has to actually be in /etc/ld.so.preload to work.
+and would get a rootshell. While the other code snippets on this page can be tested with LD_PRELOAD after compiling, i.e, LD_PRELOAD=./libhide.so ls -l, the rootshell code has to actually be loaded by /etc/ld.so.preload to work.
 
 However, as shown earlier, using strace leaves nowhere to hide. Now that we know the name of the shared library that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
 
