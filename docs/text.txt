@@ -435,9 +435,11 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file.
+Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file, example:
 
-You can use stat to confirm that the shared library is actually there.
+/usr/local/lib/libhide.so.2
+
+You can use stat to confirm that the shared library is actually there, even if it's hidden.
 
 stat -c %n /usr/local/lib/libhide.so.2
 
