@@ -439,4 +439,4 @@ Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD 
 
 You can use stat to confirm that the shared library is actually there.
 
-stat /usr/local/lib/rootshell.so
+stat /usr/local/lib/libhide.so.2
