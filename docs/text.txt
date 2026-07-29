@@ -386,7 +386,7 @@ One last thing. if you have colored text that is really annoying when you use st
 
 This works in strace version 7.0, but not earlier.
 
-if for some reason you don't want to or can't use strace, compile the following code statically, i.e, gcc -static -o cat cat.c
+If for some reason you don't want to or can't use strace, compile the following code statically, i.e, gcc -static -o cat cat.c
 
 /* cat.c */
 #include <stdio.h>
@@ -431,8 +431,10 @@ int main(int argc, char *argv[]) {
             nwritten += res;
         }
     }
-Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file.
     syscall(SYS_close, fd);
     return 0;
 }
+
+Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file.
+
 
