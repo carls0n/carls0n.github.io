@@ -381,7 +381,7 @@ As illustrated earlier, using strace leaves nowhere to hide. Now that we know th
 
 # sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled
 
-One last thing. if you have colored text that is really annoying when you use strace, you can disable colors like this
+If you have colored text in the output of strace that is really annoying when you use it, you can disable colors like this
 
 # strace --color=never cat /etc/ld/so.preload
 
