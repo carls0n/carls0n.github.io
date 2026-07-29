@@ -441,6 +441,6 @@ You can use stat to confirm that the shared library is actually there.
 
 stat -c %n /usr/local/lib/libhide.so.2
 
-Also helpful is the ability to find out the date of creation of the file.
+Also helpful is the ability to find out the date that the file was created.
 
 stat -c %w /usr/local/lib/libhide.so.2
