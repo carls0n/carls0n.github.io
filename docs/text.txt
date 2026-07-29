@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated July 29, 2026 at 11:42:15 AM
+Updated July 29, 2026 at 02:56:59 PM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -283,6 +283,38 @@ ssize_t read(int fd, void *buf, size_t count) {
     return result;
 }
 
+and the result...
+
+# cat /proc/self/maps
+558ef0321000-558ef0323000 r--p 00000000 08:02 148363                     /usr/bin/cat
+558ef0323000-558ef032a000 r-xp 00002000 08:02 148363                     /usr/bin/cat
+558ef032a000-558ef032d000 r--p 00009000 08:02 148363                     /usr/bin/cat
+558ef032d000-558ef032e000 r--p 0000b000 08:02 148363                     /usr/bin/cat
+558ef032e000-558ef032f000 rw-p 0000c000 08:02 148363                     /usr/bin/cat
+558f27afc000-558f27b1d000 rw-p 00000000 00:00 0                          [heap]
+7fb568a00000-7fb568ced000 r--p 00000000 08:02 176244                     /usr/lib/locale/locale-archive
+7fb568e00000-7fb568e24000 r--p 00000000 08:02 134189                     /usr/lib/libc.so.6
+7fb568e24000-7fb568f99000 r-xp 00024000 08:02 134189                     /usr/lib/libc.so.6
+7fb568f99000-7fb56900e000 r--p 00199000 08:02 134189                     /usr/lib/libc.so.6
+7fb56900e000-7fb569012000 r--p 0020d000 08:02 134189                     /usr/lib/libc.so.6
+7fb569012000-7fb569014000 rw-p 00211000 08:02 134189                     /usr/lib/libc.so.6
+7fb569014000-7fb56901c000 rw-p 00000000 00:00 0 
+7fb5691ce000-7fb569213000 rw-p 00000000 00:00 0 
+7fb569220000-7fb569222000 rw-p 00000000 00:00 0 
+7fb569223000-7fb569227000 r--p 00000000 00:00 0                          [vvar]
+7fb569227000-7fb569229000 r--p 00000000 00:00 0                          [vvar_vclock]
+7fb569229000-7fb56922b000 r-xp 00000000 00:00 0                          [vdso]
+7fb56922b000-7fb56922c000 r--p 00000000 08:02 134180                     /usr/lib/ld-linux-x86-64.so.2
+7fb56922c000-7fb569256000 r-xp 00001000 08:02 134180                     /usr/lib/ld-linux-x86-64.so.2
+7fb569256000-7fb569265000 r--p 0002b000 08:02 134180                     /usr/lib/ld-linux-x86-64.so.2
+7fb569265000-7fb569267000 r--p 00039000 08:02 134180                     /usr/lib/ld-linux-x86-64.so.2
+7fb569267000-7fb569268000 rw-p 0003b000 08:02 134180                     /usr/lib/ld-linux-x86-64.so.2
+7fb569268000-7fb569269000 rw-p 00000000 00:00 0 
+7fffe139b000-7fffe13bc000 rw-p 00000000 00:00 0                          [stack]
+ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
+
+No sign of libhide.so.2.
+
 So...if the call to read /etc/ld.so.preload can be intercepted and redirected and the library can be hidden from virtual memory, how then can we identify and disable the shared library? Here, strace comes to the rescue. By tracing the call to read /etc/ld.so.preload, we can find out a couple of important things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
 
 # strace cat /etc/ld.so.preload
@@ -381,7 +413,7 @@ As illustrated earlier, using strace leaves nowhere to hide. Now that we know th
 
 # sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled
 
-If you have colored text in the output of strace that is really annoying when you use it, you can disable colors like this
+One last thing. if you have colored text that is really annoying when you use strace, you can disable colors like this
 
 # strace --color=never cat /etc/ld/so.preload
 
