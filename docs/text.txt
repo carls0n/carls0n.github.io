@@ -2,7 +2,7 @@
 * Defeating LKM and LD_PRELOAD rootkits for fun and profit *
 ************************************************************
 
-July 24, 2026
+July 24, 2026 Marc Carlson
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your wifi first.
 
