@@ -385,3 +385,54 @@ One last thing. if you have colored text that is really annoying when you use st
 # strace --color=never cat /etc/ld/so.preload
 
 This works in strace version 7.0, but not earlier.
+
+if for some reason you don't want to or can't use strace, compile the following code statically, i.e, gcc -static -o cat cat.c
+
+/* cat.c */
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <syscall.h>
+#include <stdlib.h>
+
+#define BUF_SIZE 4096
+
+int main(int argc, char *argv[]) {
+    long fd;
+    long nread;
+    char buf[BUF_SIZE];
+
+    if (argc < 2) {
+        const char msg[] = "Usage: cat <filename>\n";
+        syscall(SYS_write, 2, msg, sizeof(msg) - 1);
+        return 1;
+    }
+
+    // Call the kernel openat system call directly (AT_FDCWD means current working directory relative)
+    // O_RDONLY = 0
+    fd = syscall(SYS_openat, AT_FDCWD, argv[1], O_RDONLY, 0);
+    if (fd < 0) {
+        const char err_msg[] = "Error opening file\n";
+        syscall(SYS_write, 2, err_msg, sizeof(err_msg) - 1);
+        return 1;
+    }
+
+    // Read loop using raw SYS_read and SYS_write calls
+    while ((nread = syscall(SYS_read, fd, buf, BUF_SIZE)) > 0) {
+        long nwritten = 0;
+        while (nwritten < nread) {
+            long res = syscall(SYS_write, 1, buf + nwritten, nread - nwritten); // 1 = stdout
+            if (res < 0) {
+                const char write_err[] = "Error writing to stdout\n";
+                syscall(SYS_write, 2, write_err, sizeof(write_err) - 1);
+                syscall(SYS_close, fd);
+                return 1;
+            }
+            nwritten += res;
+        }
+    }
+Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file.
+    syscall(SYS_close, fd);
+    return 0;
+}
+
