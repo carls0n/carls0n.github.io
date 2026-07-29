@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated July 29, 2026 at 02:56:59 PM
+Updated July 29, 2026 at 03:02:14 PM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -413,7 +413,7 @@ As illustrated earlier, using strace leaves nowhere to hide. Now that we know th
 
 # sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled
 
-One last thing. if you have colored text that is really annoying when you use strace, you can disable colors like this
+If you have colored text that is really annoying when you use strace, you can disable colors like this
 
 # strace --color=never cat /etc/ld/so.preload
 
