@@ -437,6 +437,6 @@ int main(int argc, char *argv[]) {
 
 Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file.
 
-You can use stat to confirm that the shared library is there.
+You can use stat to confirm that the shared library is actually there.
 
 stat /usr/local/lib/rootshell.so
