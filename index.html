@@ -21,6 +21,16 @@
             border: none;
             overflow: hidden; 
         }
+        .scroll-container {
+  overflow: hidden; /* No scrolling on desktop */
+}
+
+@media (max-width: 768px) {
+  .scroll-container {
+    overflow-x: auto; /* Enables horizontal or vertical scrolling on mobile only */
+    -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling for iOS */
+  }
+}
     </style>
 </head> 
 <body>
