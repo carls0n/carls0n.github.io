@@ -512,5 +512,5 @@ int main(int argc, char *argv[]) {
 
 # sudo ./clear /etc/ld.so.preload
 
-If you use this option. you do not need to rename or delete /usr/local/lib/libhide.so.2. Just run the code.
+If you use this option. you do not need to rename or delete /usr/local/lib/libhide.so.2. Just run the code. It also bypasses LD_PRELOAD.
 
