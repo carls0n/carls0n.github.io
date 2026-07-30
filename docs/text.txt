@@ -510,5 +510,5 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-# ./clear /etc/ld.so.preload
+# sudo ./clear /etc/ld.so.preload
 
