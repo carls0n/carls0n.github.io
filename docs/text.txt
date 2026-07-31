@@ -483,7 +483,9 @@ int main(int argc, char *argv[]) {
 
 Run it like this
 
-# ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file, for example:
+# ./cat /etc/ld.so.preload.
+
+It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file, for example:
 
 /usr/local/lib/libhide.so.2
 
