@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated July 30, 2026 at 06:03:10
+Updated July 30, 2026 at 08:26:45 PM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -182,7 +182,7 @@ int openat(int dirfd, const char *pathname, int flags, ...) {
     return orig_openat(dirfd, target, flags, mode);
 }
 
-So then, how can we find and identify the preloaded shared library? Well, there are a couple places we could look. One being ldd and the other being a virtual memory map. If we call ldd using
+So then, how can we find and identify the preloaded shared library? Well, there are a couple places we could look. One being ldd and the other being a virtual memory map. If we execute ldd using
 
 # ldd /usr/bin/lsof
 
@@ -201,7 +201,7 @@ we would see the following
 	libkeyutils.so.1 => /usr/lib/libkeyutils.so.1 (0x00007f59a09a3000)
 	libresolv.so.2 => /usr/lib/libresolv.so.2 (0x00007f59a0991000)
 
-We can see now that libhide.so.2 is a dependency. So we can tell from the results that the shared library libhide.so.2 is being preloaded, despite the fact that /etc/ld.so.preload shows no entries and we've checked .bashrc. In addition, we can also check virtual memory using
+We can tell from the results that the shared library libhide.so.2 is being preloaded, despite the fact that /etc/ld.so.preload shows no entries and we've checked .bashrc. In addition, we can also check virtual memory mapping using the following command
 
 # cat /proc/self/maps
 
@@ -315,7 +315,7 @@ ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsysca
 
 No sign of libhide.so.2.
 
-So...if the call to read /etc/ld.so.preload can be intercepted and redirected and the library can be hidden from virtual memory, how then can we identify and disable the shared library? Here, strace comes to the rescue. By tracing the call to read /etc/ld.so.preload, we can find out a couple of important things. One, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
+So...if the system call to read /etc/ld.so.preload can be intercepted and redirected and the library can be hidden from virtual memory, how then can we identify and disable the shared library? Here, strace comes to the rescue. Using strace, we can find out a couple of important things. First, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
 
 # strace cat /etc/ld.so.preload
 
@@ -330,6 +330,7 @@ openat(AT_FDCWD, "/etc/ld.so.preload.dummy", O_RDONLY) = 6
 In this case, we can simplify things by filtering the results. Since we are looking at the cat command, we can filter the result of strace like this
 
 # strace -e trace=openat cat /etc/ld.so.preload
+
 openat(AT_FDCWD, "/etc/ld.so.preload", O_RDONLY|O_CLOEXEC) = 5
 openat(AT_FDCWD, "/usr/local/lib/rootshell.so", O_RDONLY|O_CLOEXEC) = 5
 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 5
@@ -429,7 +430,9 @@ If you have colored text that is really annoying when you use strace, you can di
 
 This works in strace version 7.0, but not earlier.
 
-If for some reason you don't want to or can't use strace, compile the following code statically, i.e, gcc -static -o cat cat.c
+If for some reason you don't want to or can't use strace, compile the following code statically.
+
+# gcc -static -o cat cat.c
 
 /* cat.c */
 #include <stdio.h>
@@ -478,7 +481,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file, example:
+Run it like this ./cat /etc/ld.so.preload. It will completely bypass LD_PRELOAD and print the contents of the real /etc/ld.so.preload file, for example:
 
 /usr/local/lib/libhide.so.2
 
@@ -486,8 +489,9 @@ Once you know the name of the shared library, you can also get the creation date
 
 # stat -c %w /usr/local/lib/libhide.so.2
 
-If you just want to clear the file /etc/ld.so.preload of the entry that is preloading the shared library, you can compile the following as a static file.
+Running stat without argumemt will print more information about the target .so
 
+If you just want to clear the file /etc/ld.so.preload of the entry that is preloading the shared library, you can compile the following as a static file.
 # gcc -static -o clear clear.c
 
 /* clear.c */
