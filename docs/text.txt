@@ -486,7 +486,9 @@ Once you know the name of the shared library, you can also get the creation date
 
 # stat -c %w /usr/local/lib/libhide.so.2
 
-If you just want to clear the file /etc/ld.so.preload of the entry that is preloading the shared library, you can compile the following as a static file. gcc -static -o clear clear.c
+If you just want to clear the file /etc/ld.so.preload of the entry that is preloading the shared library, you can compile the following as a static file.
+
+# gcc -static -o clear clear.c
 
 /* clear.c */
 #include <unistd.h>
