@@ -332,7 +332,7 @@ In this case, we can simplify things by filtering the results. Since we are look
 # strace -e trace=openat cat /etc/ld.so.preload
 
 openat(AT_FDCWD, "/etc/ld.so.preload", O_RDONLY|O_CLOEXEC) = 5
-openat(AT_FDCWD, "/usr/local/lib/rootshell.so", O_RDONLY|O_CLOEXEC) = 5
+openat(AT_FDCWD, "/usr/local/lib/libhide.so.2", O_RDONLY|O_CLOEXEC) = 5
 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 5
 openat(AT_FDCWD, "/usr/lib/libc.so.6", O_RDONLY|O_CLOEXEC) = 5
 openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 5
