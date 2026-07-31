@@ -395,7 +395,7 @@ struct dirent *readdir(DIR *dirp) {
     return NULL;
 }
 
-So far we have looked at intercepting/redirecting for stealth. Hiding the module itself as well as hiding the entry in virtual memory. What's the point? Well let's say the rootkits primary payload is a rootshell. which could be done with the following code.
+So far we have looked at intercepting/redirecting, hiding the shared library itself as well as hiding the entry in virtual memory. What's the point? Well let's say the rootkits primary payload is a rootshell. which could be done with the following code.
 
 /* rootshell.c */
 #define _GNU_SOURCE
