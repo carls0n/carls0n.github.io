@@ -496,5 +496,4 @@ int main(int argc, char **argv) {
 
 If you use this option. you do not need to rename or delete /usr/local/lib/libhide.so.2. Just run the code. It also bypasses LD_PRELOAD.
 
-Another option is to install a static compiled busybox. Most distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static binaries bypassing
-LD_PRELOAD. Try installing busybox-static. If it isn't available, try installing busybox. I know that on archlinux, the default busybox is already static.
+Another option is to install a static compiled busybox. Most distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static binaries bypassing LD_PRELOAD. Try installing busybox-static. If it isn't available, try installing busybox. I know that on archlinux, the default busybox is already static.
