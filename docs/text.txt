@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated August 1, 2026 at 02:37:00 AM
+Updated August 1, 2026 at 01:43:19 PM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -110,7 +110,13 @@ If you suspect a kprobes based rootkit, you can disable kprobes using
 
 # echo 0 | sudo tee /sys/kernel/debug/kprobes/enabled
 
-This will immediately disarm any kprobe running on your system. This will also allow you to investigate further.
+This will immediately disarm any kprobe running on your system.
+
+As an additional note about kprobe based LKM rootkits. There is a way to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hoook will end having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
+
+__x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
+
+As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot, if it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
 
 *****************************************************************************
 * What about LD_PRELOAD rootkits? Is it possible to detect and remove them? *
@@ -496,4 +502,5 @@ int main(int argc, char **argv) {
 
 If you use this option. you do not need to rename or delete /usr/local/lib/libhide.so.2. Just run the code. It also bypasses LD_PRELOAD.
 
-Another option is to install a static linked busybox. Many distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static linked binaries bypassing LD_PRELOAD. Try installing busybox-static.
+Another option is to install a static compiled busybox. Most distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static binaries bypassing
+LD_PRELOAD. Try installing busybox-static.
