@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated August 1, 2026 at 01:43:19 PM
+Updated August 2, 2026 at 05:18:08 AM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -112,7 +112,7 @@ If you suspect a kprobes based rootkit, you can disable kprobes using
 
 This will immediately disarm any kprobe running on your system.
 
-As an additional note about kprobe based LKM rootkits. One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
+As an additional note about kprobe based LKM rootkits. One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsytem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
 
 __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
 
