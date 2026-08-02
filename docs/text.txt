@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated August 2, 2026 at 05:18:08 AM
+Updated August 2, 2026 at 10:40:13 AM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -117,6 +117,8 @@ As an additional note about kprobe based LKM rootkits. One could use notrace in 
 __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
 
 As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
+
+I have finished developing an LKM rootkit (which I am not going to release) based on diamorphine rootkit which uses a combination of an inline hook for __x64_sys_kill which uses a temporary kprobe for kallsyms_lookup_name to get its address despite it not being exported and notrace so that there is no registered __x64_sys_kill in /sys/kernel/tracing/enabled_functions. There is also no functions registered in /sys/kernel/tracing/available_filter_functions. Thanks to diamorphine for the inspiration! It IS possible!
 
 *****************************************************************************
 * What about LD_PRELOAD rootkits? Is it possible to detect and remove them? *
