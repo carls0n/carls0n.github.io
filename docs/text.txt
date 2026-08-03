@@ -112,13 +112,13 @@ If you suspect a kprobes based rootkit, you can disable kprobes using
 
 This will immediately disarm any kprobe running on your system.
 
-As an additional note about kprobe based LKM rootkits. One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsytem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
+As an additional note about kprobe based LKM rootkits. One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsystem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
 
 __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
 
 As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
 
-I have finished developing an LKM rootkit (which I am not going to release) based on diamorphine rootkit which uses a combination of an inline hook for __x64_sys_kill which uses a temporary kprobe for kallsyms_lookup_name to get its address despite it not being exported and notrace so that there is no registered __x64_sys_kill in /sys/kernel/tracing/enabled_functions. There is also no functions registered in /sys/kernel/tracing/available_filter_functions. Thanks to diamorphine for the inspiration! It IS possible!
+I have finished developing an LKM rootkit (which I am not going to release) based on diamorphine rootkit which uses a combination of an inline hook for __x64_sys_kill which uses a temporary kprobe for kallsyms_lookup_name to get its address despite it not being exported and notrace so that there are no registered functions in /sys/kernel/tracing/available_filter_functions or /sys/kernel/tracing/enabled_functions. Thanks to diamorphine for the inspiration! It IS possible!
 
 *****************************************************************************
 * What about LD_PRELOAD rootkits? Is it possible to detect and remove them? *
