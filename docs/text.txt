@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24, 2026 09:33:29 AM by Marc Carlson
-Updated August 2, 2026 at 10:40:13 AM
+Updated August 23, 2026 at 02:22:43 AM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -320,6 +320,38 @@ and the result...
 ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
 
 No sign of libhide.so.2.
+
+However, you can use the following code to bypass this hook and see what is really going on.
+
+/* bypass.c */
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+int main() {
+    int fd = open("/proc/self/maps", O_RDONLY);
+    if (fd < 0) {
+        perror("Failed to open file");
+        return 1;
+    }
+
+    char buf[4096];
+    ssize_t bytes_read;
+
+    while ((bytes_read = syscall(SYS_read, fd, buf, sizeof(buf) - 1)) > 0) {
+        buf[bytes_read] = '\0';
+        printf("%s", buf);
+    }
+
+    if (bytes_read < 0) {
+        perror("Syscall read failed");
+    }
+
+    close(fd);
+    return 0;
+}
 
 So...if the system call to read /etc/ld.so.preload can be intercepted and redirected and the library can be hidden from virtual memory, how then can we identify and disable the shared library? Here, strace comes to the rescue. Using strace, we can find out a couple of important things. First, we can find and identify the shared library itself as well as the interception and redirection to the blank dummy file.
 
