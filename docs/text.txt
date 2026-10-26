@@ -118,7 +118,7 @@ As an additional note about kprobe based LKM rootkits. One could use notrace in 
 
 __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
 
-As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.echo 1 > /proc/sys/kernel/modules_disabled
+As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
 
 As a preventative measure, after you boot, you can su to root and type echo 1 > /proc/sys/kernel/modules_disabled. This can't be undone without a reboot! This will prevent ANY kernel modules from being loaded. You will have to do this after every reboot though as it doesn't stay persistent after a reboot. It isn't fullproof, but it is a great preventative security measure. Having full disk encryption is definitely helpful here, as an attacker with root access doesn't know your passphrase for unlocking disk encryption.
 
