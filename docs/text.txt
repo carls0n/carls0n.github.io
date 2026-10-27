@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24 2026 09:33:29 AM by Marc Carlson
-Updated Oct 27 2026 01:35:12 PM
+Updated Oct 27 2026 01:39:16 PM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -697,8 +697,8 @@ If you use this option. you do not need to rename or delete /usr/local/lib/libhi
 
 * Another option is to install a static linked busybox. Many distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static binaries bypassing LD_PRELOAD. Try installing busybox-static.
 
-# busybox cat /etc/ld.so.preload
-# sudo busybox truncate -s 0 /etc/ld.so.preload
+# busybox cat /etc/ld.so.preload - Prints the real contents of /etc/ld.so.preload if /etc/ld.so.preload is being intercepted and redirected.
+# sudo busybox truncate -s 0 /etc/ld.so.preload - Erases the contents of /etc/ld.so.preload, so that the rootkit is no longer being preloaded.
 
 If you are doing rootkit research with ld_preload rootkits, you should ALWAYS use them via a virtual machine rather than on your regular system. Sometimes things can go wrong. So lets talk about system recovery. In many cases, booting into a rootshell can solve many problems. However, with ld_preload rootkits, this sometimes is not an option if you've messed up the preloader with bad code in your shared libraries. In the event that this happens, restart the virtual machine and depending on your system,
 
