@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24 2026 09:33:29 AM by Marc Carlson
-Updated Oct 26 05:54:16 AM 
+Updated Oct 27 06:33:20 AM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -251,7 +251,7 @@ ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsysca
 
 It is clear from the results, that the shared library libhide.so.2 is being preloaded and resides in virtual memory. The problem here is, it is trivial to hide this information. If one were to compile the following into the libhide.so.2 code, neither ldd nor /proc/self/maps would show the shared library libhide.so.2
 
-/* memhide.c updated 10/25/2026*/
+/* memhide.c updated - fixed 10/27/2026 */
 #define _GNU_SOURCE
 #include <string.h>
 #include <unistd.h>
