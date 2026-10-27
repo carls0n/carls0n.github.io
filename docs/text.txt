@@ -264,7 +264,7 @@ It is clear from the results, that the shared library libhide.so.2 is being prel
 #include <dlfcn.h>
 
 // Define the target name to filter out
-#define LIB_TO_HIDE "temp.so"
+#define LIB_TO_HIDE "libhide.so.2"
 
 static int tracked_maps_fd = -1;
 
