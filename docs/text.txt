@@ -621,7 +621,7 @@ While the other code snippets on this page can be tested with LD_PRELOAD after c
 
 As illustrated earlier, using strace leaves nowhere to hide. Now that we know the name of the shared library that is doing the hiding and intercepting is named libhide.so.2 in the /usr/local/lib/ directory, we can simply rename the file and then open the real /etc/ld.so.preload and remove the shared library from being preloaded.
 
-# sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled
+# sudo mv /usr/local/lib/libhide.so.2 /usr/local/lib/libhide.so.2.disabled *See below for a better option.
 
 If you have colored text that is really annoying when you use strace, you can disable colors like this
 
@@ -695,7 +695,7 @@ int main(int argc, char **argv) {
 
 If you use this option. you do not need to rename or delete /usr/local/lib/libhide.so.2. Just run the code. It also bypasses LD_PRELOAD.
 
-Another option is to install a static linked busybox. Many distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static binaries bypassing LD_PRELOAD. Try installing busybox-static.
+* Another option is to install a static linked busybox. Many distros have one available in their repository. Busybox uses a number of tools (such as cat and truncate) that are built as static binaries bypassing LD_PRELOAD. Try installing busybox-static.
 
 If you are doing rootkit research with ld_preload rootkits, you should ALWAYS use them via a virtual machine rather than on your regular system. Sometimes things can go wrong. So lets talk about system recovery. In many cases, booting into a rootshell can solve many problems. However, with ld_preload rootkits, this sometimes is not an option if you've messed up the preloader with bad code in your shared libraries. In the event that this happens, restart the virtual machine and depending on your system,
 
