@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24 2026 09:33:29 AM by Marc Carlson
-Updated Oct 27 2026 01:39:16 PM
+Updated Nov 03 2026 10:14:21 AM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -119,6 +119,8 @@ As an additional note about kprobe based LKM rootkits (or others for that matter
 __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
 
 As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
+
+There is a way to hide an ftrace based rootkit from /sys/kernel/tracing/enabled_functions simply by filtering the results to exclude our functions. I have demonstrated this with deception [code no longer available], as well as other rootkits such as singularity. So just because there is nothing there that shouldn't be there in enabled_functions doesn't necessarily mean that there isnt!
 
 As a preventative measure, after you boot, you can su to root and type echo 1 > /proc/sys/kernel/modules_disabled. This can't be undone without a reboot! This will prevent ANY kernel modules from being loaded. You will have to do this after every reboot though as it doesn't stay persistent after a reboot. It isn't fullproof, but it is a great preventative security measure. Having full disk encryption is definitely helpful here, as an attacker with root access doesn't know your passphrase for unlocking disk encryption.
 
