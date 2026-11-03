@@ -112,7 +112,7 @@ If you suspect a kprobes based rootkit, you can disable kprobes using
 
 This will immediately disarm any kprobe running on your system.
 
-Another way to detect rootkits is to use dmesg. sudo dmesg | grep taint should reveal any modules that tainted the kernel as would usually be the case.
+Another way to detect rootkits is to use dmesg. sudo dmesg | grep taint should reveal any modules that tainted the kernel as would usually be the case. If you are running sudo dmesg and no text or only a few lines of text appear, it may indicate that a rootkit has flushed dmesg in order to hide the module.
 
 As an additional note about kprobe based LKM rootkits (or others for that matter!). One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsystem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
 
@@ -120,7 +120,7 @@ __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0
 
 As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
 
-There is a way to hide an ftrace based rootkit from /sys/kernel/tracing/enabled_functions simply by filtering the results to exclude our functions. I have demonstrated this with deception [code no longer available], as well as other rootkits such as singularity. So just because there is nothing there that shouldn't be there in enabled_functions doesn't necessarily mean that there isnt!
+There is a way to hide an ftrace based rootkit from /sys/kernel/tracing/enabled_functions simply by filtering the results to exclude our functions. I have demonstrated this with deception [source code no longer available], as well as other rootkits such as singularity. So just because there is nothing there that shouldn't be there in enabled_functions doesn't necessarily mean that there isnt!
 
 As a preventative measure, after you boot, you can su to root and type echo 1 > /proc/sys/kernel/modules_disabled. This can't be undone without a reboot! This will prevent ANY kernel modules from being loaded. You will have to do this after every reboot though as it doesn't stay persistent after a reboot. It isn't fullproof, but it is a great preventative security measure. Having full disk encryption is definitely helpful here, as an attacker with root access doesn't know your passphrase for unlocking disk encryption.
 
