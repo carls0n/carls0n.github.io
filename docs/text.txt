@@ -126,7 +126,7 @@ One way you can check if syskill is hooked when nothing else indicates that sys_
 
 # sudo grep -w "__x64_sys_kill" /proc/kallsyms
 
-which should return somethign like this
+which should return something like this. The address of __x64_sys_kill.
 
 ffffffffac38aa20 T __x64_sys_kill
 
@@ -142,7 +142,6 @@ Notice the 0x in front of the address.
 
 and you might see something like this
 
-(gdb) x/5i 0xffffffffac38aa20
    0xffffffffac38aa20:	endbr64
    0xffffffffac38aa24:	call   0xffffffffc07d7000
    0xffffffffac38aa29:	push   %rbp
