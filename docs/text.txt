@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24 2026 09:33:29 AM by Marc Carlson
-Updated Nov 03 2026 10:14:21 AM
+Updated Nov 04 2026 12:39:57 AM 
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -121,6 +121,35 @@ __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0
 As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
 
 There is a way to hide an ftrace based rootkit from /sys/kernel/tracing/enabled_functions simply by filtering the results to exclude our functions. I have demonstrated this with deception [source code no longer available], as well as other rootkits such as singularity. So just because there is nothing there that shouldn't be there in enabled_functions doesn't necessarily mean that there isnt!
+
+One way you can check if syskill is hooked when nothing else indicates that sys_kill is hooked , you can use
+
+# sudo grep -w "__x64_sys_kill" /proc/kallsyms
+
+which should return somethign like this
+
+ffffffffac38aa20 T __x64_sys_kill
+
+copy that address and launch gdb
+
+# sudo gdb --core=/proc/kcore
+
+enter the following
+
+(gdb) x/5i 0xffffffffac38aa20
+
+Notice the 0x in front of the address.
+
+and you might see something like this
+
+(gdb) x/5i 0xffffffffac38aa20
+   0xffffffffac38aa20:	endbr64
+   0xffffffffac38aa24:	call   0xffffffffc07d7000
+   0xffffffffac38aa29:	push   %rbp
+   0xffffffffac38aa2a:	xor    %edx,%edx
+   0xffffffffac38aa2c:	mov    $0x1,%esi
+
+The second line is the smoking gun. This proves that sys_kill is hooked. There's much more you can do with gdb here, but I'll leave it at this.
 
 As a preventative measure, after you boot, you can su to root and type echo 1 > /proc/sys/kernel/modules_disabled. This can't be undone without a reboot! This will prevent ANY kernel modules from being loaded. You will have to do this after every reboot though as it doesn't stay persistent after a reboot. It isn't fullproof, but it is a great preventative security measure. Having full disk encryption is definitely helpful here, as an attacker with root access doesn't know your passphrase for unlocking disk encryption.
 
