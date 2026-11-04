@@ -120,7 +120,7 @@ __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0
 
 As you can see above, there is no lkm rootkit name attached to this. Just the kprobe_ftrace_handler. However, if you have sys_kill hooked, you know you have a problem. Reboot. If it isnt cleared, check those places mentioned in "What if a reboot doesn't clear the kernel of suspected rootkit?" above.
 
-There is a way to hide an ftrace based rootkit from /sys/kernel/tracing/enabled_functions simply by filtering the results to exclude our functions. I have demonstrated this with deception [source code no longer available], as well as other rootkits such as singularity. So just because there is nothing there that shouldn't be there in enabled_functions doesn't necessarily mean that there isnt!
+There is a way to hide an ftrace based rootkit from /sys/kernel/tracing/enabled_functions simply by filtering the results to exclude our functions. I have demonstrated this with my own rootkit, deception [source code no longer available], as well as other rootkits such as singularity. So just because there is nothing there that shouldn't be there in enabled_functions doesn't necessarily mean that there isnt!
 
 One way you can check if syskill is hooked when nothing else indicates that sys_kill is hooked , you can use
 
