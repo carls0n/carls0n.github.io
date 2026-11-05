@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24 2026 09:33:29 AM by Marc Carlson
-Updated Nov 04 2026 12:39:57 AM 
+Updated Thu Nov 05 2026 08:11:27 AM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
@@ -112,9 +112,17 @@ If you suspect a kprobes based rootkit, you can disable kprobes using
 
 This will immediately disarm any kprobe running on your system.
 
-Another way to detect rootkits is to use dmesg. sudo dmesg | grep taint should reveal any modules that tainted the kernel as would usually be the case. If you are running sudo dmesg and no text or only a few lines of text appear, it may indicate that a rootkit has flushed dmesg in order to hide the module.
+Another way to detect rootkits is to use dmesg.
 
-As an additional note about kprobe based LKM rootkits (or others for that matter!). One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsystem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
+# sudo dmesg | grep taint
+
+This should reveal any modules that tainted the kernel as would usually be the case. If you are running sudo dmesg and no text or only a few lines of text appear, it may indicate that a rootkit has flushed dmesg in order to hide the module. The lack of anything telling is not neccesarily a guarantee that a module which has tainted the kernel has NOT been installed, as is the case with deception. It filters the output of dmesg to conceal itself as well as filtering the kernel tracing files, such as /sys/kernel/tracing/enabled_functions. You can check
+
+# sudo cat /proc/sys/kernel/tainted
+
+If a value other than 0 is present, it indicates that a module HAS been installed and tainted the kernel. Once again, the lack of evidence does not mean for certain that a module tainting the kernel has not been installed. The file can easily change the tainted mask to 0. If all else fails, use the instructions below regarding checking the address of sys_kill to confirm it's hooked.
+
+As an additional note about kprobe based LKM rootkits (or others for that matter!). One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsystem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A kprobes sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
 
 __x64_sys_kill (1) R         	tramp: 0xffffffffc250b000 (kprobe_ftrace_handler+0x0/0x270) ->kprobe_ftrace_handler+0x0/0x270
 
@@ -150,7 +158,7 @@ and you might see something like this
 
 The second line is the smoking gun. This proves that sys_kill is hooked. There's much more you can do with gdb here, but I'll leave it at this.
 
-As a preventative measure, after you boot, you can su to root and type echo 1 > /proc/sys/kernel/modules_disabled. This can't be undone without a reboot! This will prevent ANY kernel modules from being loaded. You will have to do this after every reboot though as it doesn't stay persistent after a reboot. It isn't fullproof, but it is a great preventative security measure. Having full disk encryption is definitely helpful here, as an attacker with root access doesn't know your passphrase for unlocking disk encryption.
+As a preventative measure, after you boot, you can su to root and type echo 1 > /proc/sys/kernel/modules_disabled. This can't be undone without a reboot! This will prevent ANY kernel modules that weren't loaded at boot from being loaded. You will have to do this after every reboot though as it doesn't stay persistent after a reboot. It isn't fullproof, but it is a great preventative security measure. Having full disk encryption is definitely helpful here, as an attacker with root access doesn't know your passphrase for unlocking disk encryption.
 
 *****************************************************************************
 * What about LD_PRELOAD rootkits? Is it possible to detect and remove them? *
@@ -742,4 +750,3 @@ Once you have the bootloader menu options, press the e key. This will open a sma
 # > /mnt/@/etc/ld.so.preload -  This will erase the contents of /etc/ld.so.preload
 
 Reboot and you're good to go! Have fun!
-
