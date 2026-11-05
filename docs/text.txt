@@ -120,7 +120,7 @@ This should reveal any modules that tainted the kernel as would usually be the c
 
 # sudo cat /proc/sys/kernel/tainted
 
-If a value other than 0 is present, it indicates that a module HAS been installed and tainted the kernel. Once again, the lack of evidence does not mean for certain that a module tainting the kernel has not been installed. The file can easily change the tainted mask to 0. If all else fails, use the instructions below regarding checking the address of sys_kill to confirm it's hooked.
+If a value other than 0 is present, it indicates that a module HAS been installed and tainted the kernel. Once again, the lack of evidence does not mean for certain that a module tainting the kernel has not been installed. The file can be easily changed to mark tainted mask to 0. If all else fails, use the instructions below regarding checking the address of sys_kill to confirm it's hooked.
 
 As an additional note about kprobe based LKM rootkits (or others for that matter!). One could use notrace in their code to prevent ANY functions from showing up in /sys/kernel/tracing/available_filter_functions by keeping routines invisible to the kernels tracing subsystem. However, on newer kernels, you cannot use a strictly kprobes sys_kill hook. A kprobes sys_kill hook will end up having to use the ftrace backend. That leaves only one place the module would be evident. That would be in /sys/kernel/tracing/enabled_functions. Here's what the line might look like:
 
