@@ -116,7 +116,7 @@ Another way to detect rootkits is to use dmesg.
 
 # sudo dmesg | grep taint
 
-This should reveal any modules that tainted the kernel as would usually be the case. If you are running sudo dmesg and no text or only a few lines of text appear, it may indicate that a rootkit has flushed dmesg in order to hide the module. The lack of anything telling is not neccesarily a guarantee that a module which has tainted the kernel has NOT been installed, as is the case with my rootkit deception. It filters the output of dmesg as well as /dev/kmsg before it even hits dmesg in order to conceal itself. You can check
+This should reveal any modules that tainted the kernel as would usually be the case. If you are running sudo dmesg and no text or only a few lines of text appear, it may indicate that a rootkit has flushed dmesg in order to hide the module. The lack of anything telling is not neccesarily a guarantee that a module which has tainted the kernel has NOT been installed, as is the case with my rootkit, deception. It filters the output of dmesg as well as /dev/kmsg before it even hits dmesg in order to conceal itself. It also filters journalctl. You can check
 
 # sudo cat /proc/sys/kernel/tainted
 
