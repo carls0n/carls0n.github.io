@@ -136,7 +136,7 @@ One way you can check if syskill is hooked when nothing else indicates that sys_
 
 which should return something like this. The address of __x64_sys_kill.
 
-ffffffffac38aa20 T __x64_sys_kill
+ffffffffaaa095e0 T __x64_sys_kill
 
 copy that address and launch gdb
 
