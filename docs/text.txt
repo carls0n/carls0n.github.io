@@ -168,7 +168,7 @@ Now, exit gdb or in a second terminal, type
 
 sudo grep -E "aabb5fe0|aaa095e0" /proc/kallsyms (the call line address we got above AND the original address of __x64_sys_kill)
 
-If you see this; for example
+If you see this, for example
 
 ffffffffaaa095e0 T __x64_sys_kill
 ffffffffaabb5fe0 t ftrace_ops_assist_func
