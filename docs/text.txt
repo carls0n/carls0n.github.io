@@ -144,7 +144,7 @@ copy that address and launch gdb
 
 enter the following
 
-(gdb) x/5i 0xffffffffac38aa20
+(gdb) x/5i 0xffffffffaaa095e0
 
 Notice the 0x in front of the address.
 
