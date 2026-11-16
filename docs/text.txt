@@ -3,7 +3,7 @@
 ************************************************************
 
 Published July 24 2026 09:33:29 AM by Marc Carlson
-Updated Thu Nov 16 2026 12:58:01 PM AM
+Updated Thu Nov 16 2026 12:58:01 PM
 
 Before we begin, if you suspect you have a rootkit installed, it is important that you take your system offline, so disconnect your system first.
 
